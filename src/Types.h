@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-//Fixed point ints
+// Fixed point ints
 typedef union
 {
 	struct

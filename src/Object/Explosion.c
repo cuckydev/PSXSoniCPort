@@ -1,18 +1,18 @@
 #include "Object.h"
 
-//Explosion assets
+// Explosion assets
 static const uint8_t map_explosion[] = {
 	#include "Resource/Mappings/Explosion.h"
 };
 
-//Explosion object
+// Explosion object
 void Obj_Explosion(Object *obj)
 {
 	switch (obj->routine)
 	{
-		case 0: //Spawn an animal
+		case 0: // Spawn an animal
 		{
-			//Increment routine and create animal object
+			// Increment routine and create animal object
 			obj->routine += 2;
 			
 			Object *animal = FindFreeObj();
@@ -24,28 +24,28 @@ void Obj_Explosion(Object *obj)
 				animal->scratch.u16[0xB] = obj->scratch.u16[0xB];
 			}
 		}
-	//Fallthrough
-		case 2: //Initialization
-			//Increment routine
+	// Fallthrough
+		case 2: // Initialization
+			// Increment routine
 			obj->routine += 2;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = map_explosion;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x5A0);
 			obj->render.b = 0;
 			obj->render.f.align_fg = true;
 			obj->priority = 1;
 			
-			//Initialize state
+			// Initialize state
 			obj->col_type = 0;
 			obj->width_pixels = 12;
 			obj->frame_time.b = 7;
 			obj->frame = 0;
 			
-			//sfx	sfx_BreakItem,0,0,0	; play breaking enemy sound //TODO
-	//Fallthrough
-		case 4: //Animate
-			//Run animation and delete once done
+			// sfx	sfx_BreakItem,0,0,0	; play breaking enemy sound // TODO
+	// Fallthrough
+		case 4: // Animate
+			// Run animation and delete once done
 			if (--obj->frame_time.b < 0)
 			{
 				obj->frame_time.b = 7;
@@ -56,7 +56,7 @@ void Obj_Explosion(Object *obj)
 				}
 			}
 			
-			//Draw object
+			// Draw object
 			DisplaySprite(obj);
 			break;
 	}

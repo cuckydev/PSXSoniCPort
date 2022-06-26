@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-//HUD assets
+// HUD assets
 static const uint8_t art_hud_num[] = {
 	#include "Resource/Art/HUDNum.h"
 };
@@ -16,7 +16,7 @@ static const uint8_t art_life_num[] = {
 	#include "Resource/Art/LifeNum.h"
 };
 
-//HUD art writing
+// HUD art writing
 static const uint32_t hud_dec[] = {
 	100000,
 	10000,
@@ -38,7 +38,7 @@ void HUD_WriteCmd(size_t offset, const uint8_t *cmd, size_t cmds)
 	
 	do
 	{
-		//Get tile
+		// Get tile
 		int16_t tile = (int8_t)*cmd++;
 		if (tile >= 0)
 		{
@@ -57,11 +57,11 @@ void HUD_WriteNumber(size_t offset, uint32_t value, const uint32_t *dec, size_t 
 	bool digit_write = false;
 	do
 	{
-		//Get digit
+		// Get digit
 		uint16_t digit;
 		for (digit = 0; value >= *dec; digit++, value -= *dec);
 		
-		//Write digit
+		// Write digit
 		if (digit)
 			digit_write = true;
 		if (digit_write)
@@ -71,7 +71,7 @@ void HUD_WriteNumber(size_t offset, uint32_t value, const uint32_t *dec, size_t 
 			VDP_WriteVRAM(art, 64);
 		}
 		
-		//Increment offset and decimal
+		// Increment offset and decimal
 		offset += 64;
 		dec++;
 	} while (decs-- > 0);
@@ -81,16 +81,16 @@ void HUD_WriteNumber2(size_t offset, uint32_t value, const uint32_t *dec, size_t
 {
 	do
 	{
-		//Get digit
+		// Get digit
 		uint16_t digit;
 		for (digit = 0; value >= *dec; digit++, value -= *dec);
 		
-		//Write digit
+		// Write digit
 		const uint8_t *art = art_hud_num + (digit <<= 6);
 		VDP_SeekVRAM(offset);
 		VDP_WriteVRAM(art, 64);
 		
-		//Increment offset and decimal
+		// Increment offset and decimal
 		offset += 64;
 		dec++;
 	} while (decs-- > 0);
@@ -103,21 +103,21 @@ void HUD_WriteHex(size_t offset, uint32_t value)
 	size_t decs = 7;
 	do
 	{
-		//Get digit
+		// Get digit
 		value = (value & 0xFFFF0000) | (((value & 0x0FFF) << 4) | ((value & 0xF000) >> 12));
 		
 		uint16_t digit = value & 0xF;
 		if (digit >= 0xA)
 			digit += 7;
 		
-		//Write digit
+		// Write digit
 		const uint8_t *art = art_text + (digit <<= 5);
 		VDP_WriteVRAM(art, 32);
 		value = (value >> 16) | (value << 16);
 	} while (decs-- > 0);
 }
 
-//HUD functions
+// HUD functions
 void HUD_Lives()
 {
 	size_t offset = 0xFBA0;
@@ -130,11 +130,11 @@ void HUD_Lives()
 	bool digit_write = false;
 	do
 	{
-		//Get digit
+		// Get digit
 		uint16_t digit;
 		for (digit = 0; value >= *dec; digit++, value -= *dec);
 		
-		//Write digit
+		// Write digit
 		if (digit)
 			digit_write = true;
 		if (digit_write || decs == 0)
@@ -149,7 +149,7 @@ void HUD_Lives()
 			VDP_FillVRAM(0, 32);
 		}
 		
-		//Increment offset and decimal
+		// Increment offset and decimal
 		offset += 64;
 		dec++;
 	} while (decs-- > 0);
@@ -157,7 +157,7 @@ void HUD_Lives()
 
 void HUD_Base()
 {
-	//Write lives and initial HUD cmd
+	// Write lives and initial HUD cmd
 	HUD_Lives();
 	HUD_WriteCmd(0xDC40, hud_cmd_base, 14);
 }
@@ -166,32 +166,32 @@ void HUD_Update()
 {
 	if (!debug_mode)
 	{
-		//Update score
+		// Update score
 		if (score_count)
 		{
 			score_count = false;
 			HUD_WriteNumber(0xDC80, score, &hud_dec[0], 5);
 		}
 		
-		//Update rings
+		// Update rings
 		if (ring_count)
 		{
 			if (ring_count & 0x80)
 			{
-				//Set rings to 0
+				// Set rings to 0
 				HUD_WriteCmd(0xDF40, hud_cmd_ringbase, 2);
-				//Fallthrough to the below code?
+				// Fallthrough to the below code?
 			}
 			
-			//Update rings count
+			// Update rings count
 			ring_count = false;
 			HUD_WriteNumber(0xDF40, rings, &hud_dec[3], 2);
 		}
 		
-		//Update time
+		// Update time
 		if (time_count)
 		{
-			//Time Over if time is 9:59:59(frames)
+			// Time Over if time is 9:59:59(frames)
 			if (time.pad == 0 && time.min == 9 && time.sec == 59 && time.frame == 59)
 			{
 				time_count = false;
@@ -200,7 +200,7 @@ void HUD_Update()
 				return;
 			}
 			
-			//Increment time
+			// Increment time
 			if (++time.frame >= 60)
 			{
 				time.frame = 0;
@@ -212,37 +212,37 @@ void HUD_Update()
 				}
 			}
 			
-			//Write time
+			// Write time
 			HUD_WriteNumber2(0xDE40, time.min, &hud_dec[5], 0);
 			HUD_WriteNumber2(0xDEC0, time.sec, &hud_dec[4], 1);
 		}
 		
-		//Update lives
+		// Update lives
 		if (life_count)
 			HUD_Lives();
 	}
 	else
 	{
-		//Update position
+		// Update position
 		HUD_WriteHex(0xDC40, (scrpos_x.f.u << 16) | player->pos.l.x.f.u);
 		HUD_WriteHex(0xDD40, (scrpos_y.f.u << 16) | player->pos.l.y.f.u);
 		
-		//Update rings
+		// Update rings
 		if (ring_count)
 		{
 			if (ring_count & 0x80)
 			{
-				//Set rings to 0
+				// Set rings to 0
 				HUD_WriteCmd(0xDF40, hud_cmd_ringbase, 2);
-				//Fallthrough to the below code?
+				// Fallthrough to the below code?
 			}
 			
-			//Update rings count
+			// Update rings count
 			ring_count = false;
 			HUD_WriteNumber(0xDF40, rings, &hud_dec[3], 2);
 		}
 		
-		//Update sprite count
+		// Update sprite count
 		HUD_WriteNumber2(0xDEC0, sprite_count, &hud_dec[4], 1);
 	}
 }

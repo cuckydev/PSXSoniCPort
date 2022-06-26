@@ -3,20 +3,20 @@
 #include "Object.h"
 #include "PLC.h"
 
-//Level macros
+// Level macros
 #define LEVEL_ID(zone, level) (((zone) << 8) | (level))
 #define LEVEL_ZONE(id)        ((id) >> 8)
 #define LEVEL_ACT(id)         ((id) & 0x3)
 #define LEVEL_INDEX(id)       ((LEVEL_ZONE(id) << 2) | LEVEL_ACT(id))
 
-//Level bitfield structures
+// Level bitfield structures
 #define META_SOLID_LRB 0x4000
 #define META_SOLID_TOP 0x2000
 #define META_Y_FLIP    0x1000
 #define META_X_FLIP    0x0800
 #define META_TILE      0x07FF
 
-//Level types
+// Level types
 typedef enum
 {
 	ZoneId_GHZ,
@@ -53,7 +53,7 @@ typedef struct
 	uint8_t music;
 	uint8_t pal_dup;
 	uint8_t pal;
-	size_t map16_size; //TEMP
+	size_t map16_size; // TEMP
 } LevelHeader;
 
 typedef struct
@@ -61,10 +61,10 @@ typedef struct
 	uint8_t pad, min, sec, frame;
 } LevelTime;
 
-//Level headers
+// Level headers
 extern const LevelHeader level_header[ZoneId_Num];
 
-//Level globals
+// Level globals
 extern uint16_t level_id;
 
 extern uint8_t dle_routine;
@@ -158,10 +158,10 @@ extern Oscillatory oscillatory;
 extern LevelAnim sprite_anim[4];
 extern uint16_t sprite_anim_3buf;
 
-//Game functions
+// Game functions
 void AddPoints(uint16_t points);
 
-//Level functions
+// Level functions
 void LoadLevelMaps();
 void LoadLevelLayout();
 void LoadMap16(ZoneId zone);

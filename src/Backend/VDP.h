@@ -6,7 +6,7 @@
 #include "Macros.h"
 #include <stdbool.h>
 
-//VDP constants
+// VDP constants
 #define VDP_INTERNAL_PAD 32
 
 #define VRAM_SIZE    0x10000
@@ -15,7 +15,7 @@
 #define SPRITES_SIZE (SPRITES * 8)
 #define COLOURS      (4 * 16)
 
-//Tile structure
+// Tile structure
 #define TILE_PRIORITY_AND   0x8000
 #define TILE_PRIORITY_SHIFT 15
 #define TILE_PALETTE_AND    0x6000
@@ -36,23 +36,23 @@
 		((pattern  << TILE_PATTERN_SHIFT)  & TILE_PATTERN_AND)    \
 	)
 
-//Sprite structure
-//word y 000000YYYYYYYYYY
+// Sprite structure
+// word y 000000YYYYYYYYYY
 #define SPRITE_Y_AND   0x3FF
 #define SPRITE_Y_SHIFT 0
-//word sizelink 0000WWHH0LLLLLLL
+// word sizelink 0000WWHH0LLLLLLL
 #define SPRITE_SL_W_AND   0x0C00
 #define SPRITE_SL_W_SHIFT 10
 #define SPRITE_SL_H_AND   0x0300
 #define SPRITE_SL_H_SHIFT 8
 #define SPRITE_SL_L_AND   0x007F
 #define SPRITE_SL_L_SHIFT 0
-//word tile
-//word x
+// word tile
+// word x
 #define SPRITE_X_AND   0x1FF
 #define SPRITE_X_SHIFT 0
 
-//VDP interface
+// VDP interface
 int VDP_Init(const MD_Header *header);
 
 void VDP_SeekVRAM(size_t offset);

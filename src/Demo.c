@@ -5,11 +5,11 @@
 
 #include <stddef.h>
 
-//Demo state
+// Demo state
 uint16_t btn_pushtime1;
 uint8_t btn_pushtime2;
 
-//Demos
+// Demos
 static const uint8_t demo_intro_ghz[] = {
 	#include "Resource/Demo/IntroGHZ.h"
 };
@@ -70,40 +70,40 @@ const uint8_t *ending_demo_ptr[] = {
 	demo_ending_ghz2,
 };
 
-//Demo playback
+// Demo playback
 void MoveSonicInDemo()
 {
 	if (!demo)
 		return;
 	
-	//Return to title screen if start is pressed
+	// Return to title screen if start is pressed
 	if (demo >= 0 && (jpad1_hold1 & JPAD_START))
 		gamemode = GameMode_Title;
 	
-	//Get demo data
+	// Get demo data
 	const uint8_t *demo_data;
 	if (demo < 0)
 		demo_data = ending_demo_ptr[credits_num - 1];
 	else
 		demo_data = intro_demo_ptr[(gamemode == GameMode_Special) ? 6 : LEVEL_ZONE(level_id)];
 	
-	//Offset demo address
+	// Offset demo address
 	demo_data += btn_pushtime1;
 	
-	//Apply input onto joypad state
+	// Apply input onto joypad state
 	uint8_t d0 = demo_data[0];
 	uint8_t d1 = d0;
 	#ifdef SCP_REV00
 		uint8_t d2 = jpad1_hold1;
 	#else
-		uint8_t d2 = 0; //Fix the infamous demo playback bug
+		uint8_t d2 = 0; // Fix the infamous demo playback bug
 	#endif
 	d0 ^= d2;
 	jpad1_hold1 = d1;
 	d0 &= d1;
 	jpad1_press1 = d0;
 	
-	//Handle demo timer
+	// Handle demo timer
 	if (--btn_pushtime2 == 0xFF)
 	{
 		btn_pushtime2 = demo_data[3];

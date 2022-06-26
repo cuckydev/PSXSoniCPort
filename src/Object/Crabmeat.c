@@ -3,7 +3,7 @@
 #include "Level.h"
 #include "LevelCollision.h"
 
-//Crabmeat assets
+// Crabmeat assets
 static const uint8_t map_crabmeat[] = {
 	#include "Resource/Mappings/Crabmeat.h"
 };
@@ -11,12 +11,12 @@ static const uint8_t anim_crabmeat[] = {
 	#include "Resource/Animation/Crabmeat.h"
 };
 
-//Crabmeat object
+// Crabmeat object
 typedef struct
 {
-	uint8_t pad0[8];    //0x28-0x2F
-	int16_t time_delay; //0x30
-	uint8_t crab_mode;  //0x32
+	uint8_t pad0[8];    // 0x28-0x2F
+	int16_t time_delay; // 0x30
+	uint8_t crab_mode;  // 0x32
 } Scratch_Crabmeat;
 
 static uint8_t Obj_Crabmeat_SetAni(Object *obj)
@@ -42,45 +42,45 @@ void Obj_Crabmeat(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Initialize collision
+		case 0: // Initialization
+			// Initialize collision
 			obj->y_rad = 16;
 			obj->x_rad = 8;
 			
-			//Initialize object drawing information
+			// Initialize object drawing information
 			obj->mappings = map_crabmeat;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x400);
 			obj->render.b = 0;
 			obj->render.f.align_fg = true;
 			obj->priority = 3;
 			
-			//Initialize more stuff
+			// Initialize more stuff
 			obj->col_type = 0x06;
 			obj->width_pixels = 21;
 			
-			//Fall before enabling
+			// Fall before enabling
 			ObjectFall(obj);
 			if ((floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u)) >= 0)
 				break;
 			
-			//Clip and increment routine
+			// Clip and increment routine
 			obj->pos.l.y.f.u += floor_dist;
 			obj->ysp = 0;
 			obj->angle = angle_buffer0;
 			obj->routine += 2;
-	//Fallthrough
-		case 2: //Moving
+	// Fallthrough
+		case 2: // Moving
 			switch (obj->routine_sec)
 			{
-				case 0: //Wait to fire
-					//Wait for timer to expire
+				case 0: // Wait to fire
+					// Wait for timer to expire
 					if (--scratch->time_delay >= 0)
 						break;
 					
-					//Check if we should fire
+					// Check if we should fire
 					if (!obj->render.f.on_screen || ((scratch->crab_mode ^= 2) & 2))
 					{
-						//Turn around
+						// Turn around
 						obj->routine_sec += 2;
 						scratch->time_delay = 127;
 						obj->xsp = 0x80;
@@ -90,17 +90,17 @@ void Obj_Crabmeat(Object *obj)
 					}
 					else
 					{
-						//Fire
+						// Fire
 						scratch->time_delay = 59;
 						obj->anim = 6;
 						
-						//Create projectiles
+						// Create projectiles
 						Object *proj;
 						
 						proj = FindFreeObj();
 						if (proj != NULL)
 						{
-							//Left
+							// Left
 							proj->type = ObjId_Crabmeat;
 							proj->routine = 6;
 							proj->pos.l.x.f.u = obj->pos.l.x.f.u - 16;
@@ -111,7 +111,7 @@ void Obj_Crabmeat(Object *obj)
 						proj = FindFreeObj();
 						if (proj != NULL)
 						{
-							//Right
+							// Right
 							proj->type = ObjId_Crabmeat;
 							proj->routine = 6;
 							proj->pos.l.x.f.u = obj->pos.l.x.f.u + 16;
@@ -120,23 +120,23 @@ void Obj_Crabmeat(Object *obj)
 						}
 					}
 					break;
-				case 2: //Walking
-					//Wait for timer to expire
+				case 2: // Walking
+					// Wait for timer to expire
 					if (--scratch->time_delay >= 0)
 					{
-						//Move then perform collision
+						// Move then perform collision
 						SpeedToPos(obj);
 						
 						if (!((scratch->crab_mode ^= 1) & 1))
 						{
-							//Check if we're too close to edge
+							// Check if we're too close to edge
 							floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u + (obj->status.o.f.x_flip ? -16 : 16));
 							if (floor_dist >= -8 && floor_dist < 12)
 								break;
 						}
 						else
 						{
-							//Clip out of floor
+							// Clip out of floor
 							floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u);
 							obj->pos.l.y.f.u += floor_dist;
 							obj->angle = angle_buffer0;
@@ -145,7 +145,7 @@ void Obj_Crabmeat(Object *obj)
 						}
 					}
 					
-					//Stop for a moment
+					// Stop for a moment
 					obj->routine_sec -= 2;
 					scratch->time_delay = 59;
 					obj->xsp = 0;
@@ -153,37 +153,37 @@ void Obj_Crabmeat(Object *obj)
 					break;
 			}
 			
-			//Animate, draw, and unload when off-screen
+			// Animate, draw, and unload when off-screen
 			AnimateSprite(obj, anim_crabmeat);
 			RememberState(obj);
 			break;
-		case 4: //Delete
+		case 4: // Delete
 			ObjectDelete(obj);
 			break;
-		case 6: //Projectile initialization
-			//Increment routine
+		case 6: // Projectile initialization
+			// Increment routine
 			obj->routine += 2;
 			
-			//Initialize object drawing information
+			// Initialize object drawing information
 			obj->mappings = map_crabmeat;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x400);
 			obj->render.b = 0;
 			obj->render.f.align_fg = true;
 			obj->priority = 3;
 			
-			//Initialize more stuff
+			// Initialize more stuff
 			obj->col_type = 0x87;
 			obj->width_pixels = 8;
 			obj->ysp = -0x400;
 			obj->anim = 7;
-	//Fallthrough
-		case 8: //Projectile move
-			//Move and animate
+	// Fallthrough
+		case 8: // Projectile move
+			// Move and animate
 			ObjectFall(obj);
 			AnimateSprite(obj, anim_crabmeat);
 			DisplaySprite(obj);
 			
-			//Delete if fallen below stage
+			// Delete if fallen below stage
 			if (obj->pos.l.y.f.u >= limit_btm2 + SCREEN_HEIGHT)
 				ObjectDelete(obj);
 			break;

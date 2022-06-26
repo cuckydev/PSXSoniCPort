@@ -1,4 +1,4 @@
-//This file was given by Clownacy
+// This file was given by Clownacy
 
 #include "Nemesis.h"
 
@@ -61,7 +61,7 @@ void NemDecPrepare(NemesisState *state)
 	}
 }
 
-//This function needed a lot of restructuring to look good in C
+// This function needed a lot of restructuring to look good in C
 void NemDecRun(NemesisState *state)
 {
 	for (;;)
@@ -84,7 +84,7 @@ void NemDecRun(NemesisState *state)
 					}
 					else
 					{
-						// NemDec_WriteAndAdvance_XOR
+						//  NemDec_WriteAndAdvance_XOR
 						*state->destination++ = (state->d2 >> 8 * 3) & 0xFF;
 						*state->destination++ = (state->d2 >> 8 * 2) & 0xFF;
 						*state->destination++ = (state->d2 >> 8 * 1) & 0xFF;
@@ -100,7 +100,7 @@ void NemDecRun(NemesisState *state)
 					}
 					else
 					{
-						// NemDec_WriteAndAdvance
+						//  NemDec_WriteAndAdvance
 						*state->destination++ = (state->d4 >> 8 * 3) & 0xFF;
 						*state->destination++ = (state->d4 >> 8 * 2) & 0xFF;
 						*state->destination++ = (state->d4 >> 8 * 1) & 0xFF;
@@ -193,9 +193,9 @@ static void NemDecMain(NemesisState *state)
 	
 	state->d6 = 0x10;
 	
-	// These lines are new, to suit the restructured NemDecRun
+	//  These lines are new, to suit the restructured NemDecRun
 	state->d0 = 0;
-	//state->d1 = 0; // This line isn't actually necessary
+	// state->d1 = 0; //  This line isn't actually necessary
 	
 	NemDecRun(state);
 }

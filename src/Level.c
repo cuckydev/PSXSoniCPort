@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-//Level layouts
+// Level layouts
 static const uint8_t layout_ghz1[] = {
 	#include "Resource/Layout/GHZ1.h"
 };
@@ -98,7 +98,7 @@ static const uint8_t layout_ending[] = {
 	#include "Resource/Layout/Ending.h"
 };
 
-//256x256 mappings
+// 256x256 mappings
 static const uint8_t map256_ghz[] = {
 	#include "Resource/Map256/GHZ.h"
 };
@@ -118,7 +118,7 @@ static const uint8_t map256_sbz[] = {
 	#include RES_REV(Map256/SBZ)
 };
 
-//16x16 mappings
+// 16x16 mappings
 static const uint8_t map16_ghz[] = {
 	#include "Resource/Map16/GHZ.h"
 };
@@ -138,7 +138,7 @@ static const uint8_t map16_sbz[] = {
 	#include "Resource/Map16/SBZ.h"
 };
 
-//Collision indices
+// Collision indices
 static const uint8_t coli_ghz[] = {
 	#include "Resource/CollisionIndex/GHZ.h"
 };
@@ -158,7 +158,7 @@ static const uint8_t coli_sbz[] = {
 	#include "Resource/CollisionIndex/SBZ.h"
 };
 
-//Object positions
+// Object positions
 static const uint8_t obj_ghz1[] = {
 	#include "Resource/ObjectLayout/GHZ1.h"
 };
@@ -256,50 +256,50 @@ static const uint8_t obj_ending[] = {
 	#include "Resource/ObjectLayout/Ending.h"
 };
 
-//Level definitions
+// Level definitions
 static const struct
 {
 	const uint8_t *layout_fg;
 	const uint8_t *layout_bg;
 	const uint8_t *layout_3;
 } level_layouts[ZoneId_Num][4] = {
-	{ //ZoneId_GHZ
+	{ // ZoneId_GHZ
 		{layout_ghz1,   layout_ghzbg,  NULL},
 		{layout_ghz2,   layout_ghzbg,  NULL},
 		{layout_ghz3,   layout_ghzbg,  NULL},
 		{NULL,          NULL,          NULL},
 	},
-	{ //ZoneId_LZ
+	{ // ZoneId_LZ
 		{layout_lz1,    layout_lzbg,   NULL},
 		{layout_lz2,    layout_lzbg,   NULL},
 		{layout_lz3,    layout_lzbg,   NULL},
 		{layout_sbz3,   layout_lzbg,   NULL},
 	},
-	{ //ZoneId_MZ
+	{ // ZoneId_MZ
 		{layout_mz1,    layout_mz1bg,  layout_mz1},
 		{layout_mz2,    layout_mz2bg,  NULL},
 		{layout_mz3,    layout_mz3bg,  NULL},
 		{NULL,          NULL,          NULL},
 	},
-	{ //ZoneId_SLZ
+	{ // ZoneId_SLZ
 		{layout_slz1,   layout_slzbg,  NULL},
 		{layout_slz2,   layout_slzbg,  NULL},
 		{layout_slz3,   layout_slzbg,  NULL},
 		{NULL,          NULL,          NULL},
 	},
-	{ //ZoneId_SYZ
+	{ // ZoneId_SYZ
 		{layout_syz1,   layout_syzbg,  NULL},
 		{layout_syz2,   layout_syzbg,  NULL},
 		{layout_syz3,   layout_syzbg,  NULL},
 		{NULL,          NULL,          NULL},
 	},
-	{ //ZoneId_SBZ
+	{ // ZoneId_SBZ
 		{layout_sbz1,   layout_sbz1bg, layout_sbz1bg},
 		{layout_sbz2,   layout_sbz2bg, layout_sbz2bg},
 		{layout_sbz2,   layout_sbz2bg, NULL},
 		{NULL,          NULL,          NULL},
 	},
-	{ //ZoneId_EndZ
+	{ // ZoneId_EndZ
 		{layout_ending, layout_ghzbg,  NULL},
 		{layout_ending, layout_ghzbg,  NULL},
 		{NULL,          NULL,          NULL},
@@ -308,43 +308,43 @@ static const struct
 };
 
 static const int16_t ldef_size[ZoneId_Num][4][6] = {
-	{ //ZoneId_GHZ
+	{ // ZoneId_GHZ
 		{0x0004, 0x0000, 0x24BF + SCREEN_WIDEADD2, 0x0000, 0x0300 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x1EBF + SCREEN_WIDEADD2, 0x0000, 0x0300 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2960 + SCREEN_WIDEADD2, 0x0000, 0x0300 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2ABF + SCREEN_WIDEADD2, 0x0000, 0x0300 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_LZ
+	{ // ZoneId_LZ
 		{0x0004, 0x0000, 0x19BF + SCREEN_WIDEADD2, 0x0000, 0x0530 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x10AF + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x202F + SCREEN_WIDEADD2,-0x0100, 0x0800 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x20BF,                   0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_MZ
+	{ // ZoneId_MZ
 		{0x0004, 0x0000, 0x17BF + SCREEN_WIDEADD2, 0x0000, 0x01D0 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x17BF + SCREEN_WIDEADD2, 0x0000, 0x0520 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x1800 + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x16BF + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_SLZ
+	{ // ZoneId_SLZ
 		{0x0004, 0x0000, 0x1FBF + SCREEN_WIDEADD2, 0x0000, 0x0640 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x1FBF + SCREEN_WIDEADD2, 0x0000, 0x0640 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2000 + SCREEN_WIDEADD2, 0x0000, 0x06C0 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x3EC0 + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_SYZ
+	{ // ZoneId_SYZ
 		{0x0004, 0x0000, 0x22C0 + SCREEN_WIDEADD2, 0x0000, 0x0420 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x28C0 + SCREEN_WIDEADD2, 0x0000, 0x0520 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2C00 + SCREEN_WIDEADD2, 0x0000, 0x0620 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2EC0 + SCREEN_WIDEADD2, 0x0000, 0x0620 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_SBZ
+	{ // ZoneId_SBZ
 		{0x0004, 0x0000, 0x21C0 + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x1E40 + SCREEN_WIDEADD2,-0x0100, 0x0800 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x2080, 0x2460 + SCREEN_WIDEADD2, 0x0510, 0x0510 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x3EC0 + SCREEN_WIDEADD2, 0x0000, 0x0720 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 	},
-	{ //ZoneId_EndZ
+	{ // ZoneId_EndZ
 		{0x0004, 0x0000, 0x0500 + SCREEN_WIDEADD2, 0x0110, 0x0110 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x0DC0 + SCREEN_WIDEADD2, 0x0110, 0x0110 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
 		{0x0004, 0x0000, 0x2FFF + SCREEN_WIDEADD2, 0x0000, 0x0320 + SCREEN_TALLADD, 96 + SCREEN_TALLADD2},
@@ -352,45 +352,45 @@ static const int16_t ldef_size[ZoneId_Num][4][6] = {
 	}
 };
 
-//Player start positions
+// Player start positions
 static const int16_t ldef_start[ZoneId_Num][4][2] = {
-	{ //ZoneId_GHZ
+	{ // ZoneId_GHZ
 		{0x0050, 0x03B0},
 		{0x0050, 0x00FC},
 		{0x0050, 0x03B0},
 		{0x0080, 0x00A8},
 	},
-	{ //ZoneId_LZ
+	{ // ZoneId_LZ
 		{0x0060, 0x006C},
 		{0x0050, 0x00EC},
 		{0x0050, 0x02EC},
 		{0x0B80, 0x0000},
 	},
-	{ //ZoneId_MZ
+	{ // ZoneId_MZ
 		{0x0030, 0x0266},
 		{0x0030, 0x0266},
 		{0x0030, 0x0166},
 		{0x0080, 0x00A8},
 	},
-	{ //ZoneId_SLZ
+	{ // ZoneId_SLZ
 		{0x0040, 0x02CC},
 		{0x0040, 0x014C},
 		{0x0040, 0x014C},
 		{0x0080, 0x00A8},
 	},
-	{ //ZoneId_SYZ
+	{ // ZoneId_SYZ
 		{0x0030, 0x03BD},
 		{0x0030, 0x01BD},
 		{0x0030, 0x00EC},
 		{0x0080, 0x00A8},
 	},
-	{ //ZoneId_SBZ
+	{ // ZoneId_SBZ
 		{0x0030, 0x048C},
 		{0x0030, 0x074C},
 		{0x2140, 0x05AC},
 		{0x0080, 0x00A8},
 	},
-	{ //ZoneId_EndZ
+	{ // ZoneId_EndZ
 		{0x0620, 0x016B},
 		{0x0EE0, 0x016C},
 		{0x0080, 0x00A8},
@@ -398,18 +398,18 @@ static const int16_t ldef_start[ZoneId_Num][4][2] = {
 	},
 };
 
-//Level loop (and S-tube) chunks
+// Level loop (and S-tube) chunks
 static const uint8_t ldef_schunks[ZoneId_Num][2][2] = {
-	{{0xB5, 0x7F}, {0x1F, 0x20}}, //ZoneId_GHZ
-	{{0x7F, 0x7F}, {0x7F, 0x7F}}, //ZoneId_LZ
-	{{0x7F, 0x7F}, {0x7F, 0x7F}}, //ZoneId_MZ
-	{{0xAA, 0xB4}, {0x7F, 0x7F}}, //ZoneId_SLZ
-	{{0x7F, 0x7F}, {0x7F, 0x7F}}, //ZoneId_SYZ
-	{{0x7F, 0x7F}, {0x7F, 0x7F}}, //ZoneId_SBZ
-	{{0x7F, 0x7F}, {0x7F, 0x7F}}, //ZoneId_EndZ
+	{{0xB5, 0x7F}, {0x1F, 0x20}}, // ZoneId_GHZ
+	{{0x7F, 0x7F}, {0x7F, 0x7F}}, // ZoneId_LZ
+	{{0x7F, 0x7F}, {0x7F, 0x7F}}, // ZoneId_MZ
+	{{0xAA, 0xB4}, {0x7F, 0x7F}}, // ZoneId_SLZ
+	{{0x7F, 0x7F}, {0x7F, 0x7F}}, // ZoneId_SYZ
+	{{0x7F, 0x7F}, {0x7F, 0x7F}}, // ZoneId_SBZ
+	{{0x7F, 0x7F}, {0x7F, 0x7F}}, // ZoneId_EndZ
 };
 
-//Level scroll block sizes
+// Level scroll block sizes
 static const int16_t ldef_scrollsize[ZoneId_Num][4] = {
 	{ 0x70, 0x100, 0x100, 0x100},
 	{0x800, 0x100, 0x100, 0},
@@ -420,7 +420,7 @@ static const int16_t ldef_scrollsize[ZoneId_Num][4] = {
 	{ 0x70, 0x100, 0x100, 0x100},
 };
 
-//Level headers
+// Level headers
 const LevelHeader level_header[ZoneId_Num] = {
 	{PlcId_GHZ, art_ghz2, PlcId_GHZ2, map16_ghz, map256_ghz, 0, 0, PalId_GHZ,  PalId_GHZ,  sizeof(map16_ghz)},
 	{PlcId_LZ,  art_lz,   PlcId_LZ2,  map16_lz,  map256_lz,  0, 0, PalId_LZ,   PalId_LZ,   sizeof(map16_lz)},
@@ -431,7 +431,7 @@ const LevelHeader level_header[ZoneId_Num] = {
 	{0,         art_ghz2, 0,          map16_ghz, map256_ghz, 0, 0, PalId_GHZ,  PalId_GHZ,  sizeof(map16_ghz)},
 };
 
-//Level collision indices
+// Level collision indices
 const uint8_t *level_coli[ZoneId_Num - 1] = {
 	coli_ghz,
 	coli_lz,
@@ -441,47 +441,47 @@ const uint8_t *level_coli[ZoneId_Num - 1] = {
 	coli_sbz,
 };
 
-//Level object layouts
+// Level object layouts
 static const uint8_t obj_null[] = {0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00};
 
 const uint8_t *level_obj[ZoneId_Num][4][2] = {
-	{ //ZoneId_GHZ
+	{ // ZoneId_GHZ
 		{obj_ghz1, obj_null},
 		{obj_ghz2, obj_null},
 		{obj_ghz3, obj_null},
 		{obj_ghz1, obj_null},
 	},
-	{ //ZoneId_LZ
+	{ // ZoneId_LZ
 		{obj_lz1,  obj_null},
 		{obj_lz2,  obj_null},
 		{obj_lz3,  obj_null},
 		{obj_sbz3, obj_null},
 	},
-	{ //ZoneId_MZ
+	{ // ZoneId_MZ
 		{obj_mz1, obj_null},
 		{obj_mz2, obj_null},
 		{obj_mz3, obj_null},
 		{obj_mz1, obj_null},
 	},
-	{ //ZoneId_SLZ
+	{ // ZoneId_SLZ
 		{obj_slz1, obj_null},
 		{obj_slz2, obj_null},
 		{obj_slz3, obj_null},
 		{obj_slz1, obj_null},
 	},
-	{ //ZoneId_SYZ
+	{ // ZoneId_SYZ
 		{obj_syz1, obj_null},
 		{obj_syz2, obj_null},
 		{obj_syz3, obj_null},
 		{obj_syz1, obj_null},
 	},
-	{ //ZoneId_SBZ
+	{ // ZoneId_SBZ
 		{obj_sbz1, obj_null},
 		{obj_sbz2, obj_null},
 		{obj_fz,   obj_null},
 		{obj_sbz1, obj_null},
 	},
-	{ //ZoneId_EndZ
+	{ // ZoneId_EndZ
 		{obj_ending, obj_null},
 		{obj_ending, obj_null},
 		{obj_ending, obj_null},
@@ -489,7 +489,7 @@ const uint8_t *level_obj[ZoneId_Num][4][2] = {
 	}
 };
 
-//Level state
+// Level state
 uint16_t level_id;
 
 uint8_t dle_routine;
@@ -509,7 +509,7 @@ uint8_t time_over;
 
 uint16_t frame_count;
 
-//Player state
+// Player state
 uint32_t score;
 LevelTime time;
 uint16_t rings;
@@ -532,20 +532,20 @@ uint8_t invincibility;
 uint8_t shoes;
 uint8_t debug_use;
 
-//Water state
+// Water state
 int16_t wtr_pos1, wtr_pos2, wtr_pos3;
 uint8_t water;
 uint8_t wtr_routine;
 uint8_t wtr_state;
 
-//Loaded level data
+// Loaded level data
 uint8_t *const level_map256 = &buffer0000[0x0000];
 ALIGNED2 uint8_t level_map16[0x1800];
 uint8_t level_layout[8][2][0x40];
 uint8_t level_schunks[2][2];
 const uint8_t *coll_index;
 
-//Object state
+// Object state
 Object objects[OBJECTS];
 Object *const player = objects;
 Object *const level_objects = objects + RESERVED_OBJECTS;
@@ -588,50 +588,50 @@ Oscillatory oscillatory;
 LevelAnim sprite_anim[4];
 uint16_t sprite_anim_3buf;
 
-//Game functions
+// Game functions
 void AddPoints(uint16_t points)
 {
-	//Update HUD
+	// Update HUD
 	score_count = 1;
 	
 	#ifdef SCP_REV00
-		//TODO
+		// TODO
 	#else
-		//Increase score
+		// Increase score
 		if ((score += points) >= 999999)
 			score = 999999;
 		
-		//Check if we should be rewarded an extra life
+		// Check if we should be rewarded an extra life
 		if (score >= score_life)
 		{
 			score_life += 5000;
 			#ifndef SCP_JP
 				lives++;
 				life_count++;
-				//music	bgm_ExtraLife,1,0,0 //TODO
+				// music	bgm_ExtraLife,1,0,0 // TODO
 			#endif
 		}
 	#endif
 }
 
-//Level loading
+// Level loading
 void LoadLevelMaps()
 {
-	//Get header
+	// Get header
 	const LevelHeader *header = &level_header[LEVEL_ZONE(level_id)];
 	
-	//Load chunk maps and tile map
+	// Load chunk maps and tile map
 	KosDec(header->map256, level_map256);
 	memcpy(level_map16, header->map16, header->map16_size);
 }
 
 void LoadLayout(const uint8_t *from, uint8_t *to)
 {
-	//Read layout header (dimensions - 1)
+	// Read layout header (dimensions - 1)
 	uint8_t width  = *from++;
 	uint8_t height = *from++;
 	
-	//Read layout data
+	// Read layout data
 	do
 	{
 		for (size_t i = 0; i <= width; i++)
@@ -642,7 +642,7 @@ void LoadLayout(const uint8_t *from, uint8_t *to)
 
 void LoadLevelLayout()
 {
-	//Load foreground and background layers
+	// Load foreground and background layers
 	memset(level_layout, 0, sizeof(level_layout));
 	LoadLayout(
 		level_layouts[LEVEL_ZONE(level_id)][LEVEL_ACT(level_id)].layout_fg,
@@ -654,13 +654,13 @@ void LoadLevelLayout()
 
 void LevelSizeLoad()
 {
-	//Reset level state
+	// Reset level state
 	dle_routine = 0;
 	
-	//Get sizes to load
+	// Get sizes to load
 	const int16_t *sizes = ldef_size[LEVEL_ZONE(level_id)][LEVEL_ACT(level_id)];
 	
-	//Load sizes and other stuff
+	// Load sizes and other stuff
 	/* FFFFF730 = */ sizes++;
 	limit_left2 = *sizes;
 	limit_left1 = *sizes++;
@@ -673,12 +673,12 @@ void LevelSizeLoad()
 	limit_left3 = limit_left2 + 0x240;
 	look_shift = *sizes++;
 	
-	//Load player start
+	// Load player start
 	int16_t x, y;
 	if (last_lamp)
 	{
-		//TODO
-		//Lamp_LoadInfo();
+		// TODO
+		// Lamp_LoadInfo();
 		x = player->pos.l.x.f.u;
 		y = player->pos.l.y.f.u;
 	}
@@ -686,13 +686,13 @@ void LevelSizeLoad()
 	{
 		if (demo < 0)
 		{
-			//TODO - in an ending demo
+			// TODO - in an ending demo
 			x = 0x80;
 			y = 0xA8;
 		}
 		else
 		{
-			//Level
+			// Level
 			x = ldef_start[LEVEL_ZONE(level_id)][LEVEL_ACT(level_id)][0];
 			y = ldef_start[LEVEL_ZONE(level_id)][LEVEL_ACT(level_id)][1];
 		}
@@ -701,21 +701,21 @@ void LevelSizeLoad()
 		player->pos.l.y.f.u = y;
 	}
 	
-	//Clip camera position against left and right
-	if ((x -= (SCREEN_WIDTH / 2)) < 0) //0 instead of limit_left
+	// Clip camera position against left and right
+	if ((x -= (SCREEN_WIDTH / 2)) < 0) // 0 instead of limit_left
 		x = 0;
 	if (x >= limit_right2)
 		x = limit_right2;
 	scrpos_x.f.u = x;
 	
-	//Clip camera position against top and bottom
-	if ((y -= (96 + SCREEN_TALLADD2)) < 0) //0 instead of limit_top
+	// Clip camera position against top and bottom
+	if ((y -= (96 + SCREEN_TALLADD2)) < 0) // 0 instead of limit_top
 		y = 0;
 	if (y >= limit_btm2)
 		y = limit_btm2;
 	scrpos_y.f.u = y;
 	
-	//Load other level stuff
+	// Load other level stuff
 	BgScrollSpeed(x, y);
 	memcpy(&level_schunks[0][0], &ldef_schunks[LEVEL_ZONE(level_id)][0][0], 4);
 	
@@ -728,17 +728,17 @@ void LevelSizeLoad()
 
 void LevelDataLoad()
 {
-	//Get header
+	// Get header
 	const LevelHeader *header = &level_header[LEVEL_ZONE(level_id)];
 	
-	//Load chunk maps and tile map
+	// Load chunk maps and tile map
 	KosDec(header->map256, level_map256);
 	memcpy(level_map16, header->map16, header->map16_size);
 	
-	//Load level layout
+	// Load level layout
 	LoadLevelLayout();
 	
-	//Load level palette
+	// Load level palette
 	PaletteId pal = header->pal;
 	if (level_id == LEVEL_ID(ZoneId_LZ, 3))
 		pal = PalId_SBZ3;
@@ -746,33 +746,33 @@ void LevelDataLoad()
 		pal = PalId_SBZ2;
 	PalLoad1(pal);
 	
-	//Load level art
+	// Load level art
 	if (header->plc2 != 0)
 		AddPLC(header->plc2);
 }
 
 void ColIndexLoad()
 {
-	//Use zone's collision indices
+	// Use zone's collision indices
 	coll_index = level_coli[LEVEL_ZONE(level_id)];
 }
 
-//Dynamic level events
+// Dynamic level events
 void DynamicLevelEvents()
 {
-	//Update target scroll limits
+	// Update target scroll limits
 	switch (LEVEL_ZONE(level_id))
 	{
 		case ZoneId_GHZ:
 			switch (LEVEL_ACT(level_id))
 			{
-				case 0: //Act 1
+				case 0: // Act 1
 					if ((uint16_t)scrpos_x.f.u >= (0x1780 - SCREEN_WIDEADD2))
 						limit_btm1 = 0x400 - SCREEN_TALLADD;
 					else
 						limit_btm1 = 0x300 - SCREEN_TALLADD;
 					break;
-				case 1: //Act 2
+				case 1: // Act 2
 					limit_btm1 = 0x300 - SCREEN_TALLADD;
 					if ((uint16_t)scrpos_x.f.u < (0xED0 - SCREEN_WIDEADD2))
 						break;
@@ -784,7 +784,7 @@ void DynamicLevelEvents()
 						break;
 					limit_btm1 = 0x300 - SCREEN_TALLADD;
 					break;
-				case 2: //Act 3
+				case 2: // Act 3
 					switch (dle_routine)
 					{
 						case 0:
@@ -819,7 +819,7 @@ void DynamicLevelEvents()
 								dle_routine -= 2;
 							if ((uint16_t)scrpos_x.f.u < (0x2960 - SCREEN_WIDEADD2))
 								break;
-							//TODO spawn boss
+							// TODO spawn boss
 							break;
 					}
 					break;
@@ -829,7 +829,7 @@ void DynamicLevelEvents()
 			break;
 	}
 	
-	//Update scroll limits
+	// Update scroll limits
 	int16_t scroll_diff = limit_btm1 - limit_btm2;
 	int16_t spd = 2;
 	
@@ -849,24 +849,24 @@ void DynamicLevelEvents()
 	}
 }
 
-//Object animation
+// Object animation
 void SynchroAnimate()
 {
-	//Spiked log
+	// Spiked log
 	if (--sprite_anim[0].time < 0)
 	{
 		sprite_anim[0].time = 11;
 		sprite_anim[0].frame = (sprite_anim[0].frame - 1) & 7;
 	}
 	
-	//Rings
+	// Rings
 	if (--sprite_anim[1].time < 0)
 	{
 		sprite_anim[1].time = 7;
 		sprite_anim[1].frame = (sprite_anim[1].frame + 1) & 3;
 	}
 	
-	//Unused
+	// Unused
 	if (--sprite_anim[2].time < 0)
 	{
 		sprite_anim[2].time = 7;
@@ -874,24 +874,24 @@ void SynchroAnimate()
 			sprite_anim[2].frame = 0;
 	}
 	
-	//Bouncing rings
+	// Bouncing rings
 	if (sprite_anim[3].time != 0)
 	{
-		//WACKY!!
+		// WACKY!!
 		sprite_anim_3buf += (uint8_t)sprite_anim[3].time;
 		sprite_anim[3].frame = (sprite_anim_3buf >> 9) & 3;
 		sprite_anim[3].time--;
 	}
 }
 
-//Signpost loading
+// Signpost loading
 void SignpostArtLoad()
 {
-	//Check if signpost should load
+	// Check if signpost should load
 	if (debug_use || (level_id & 0xFF) == 2)
 		return;
 	
-	//Check if we've reached the end of the level
+	// Check if we've reached the end of the level
 	int16_t end_x = limit_right2 - 0x100 - SCREEN_WIDEADD2;
 	if (scrpos_x.f.u >= end_x && time_count && limit_left2 != end_x)
 	{
@@ -900,31 +900,31 @@ void SignpostArtLoad()
 	}
 }
 
-//Level object loading
-#define LOAD_WIDTH (((SCREEN_WIDTH + 0x80) & ~0x7F) + 0x100) //I dunno
+// Level object loading
+#define LOAD_WIDTH (((SCREEN_WIDTH + 0x80) & ~0x7F) + 0x100) // I dunno
 
 static bool ChkLoadObj(uint8_t index, const uint8_t **entry)
 {
-	//Handle object state
+	// Handle object state
 	if ((*entry)[4] & 0x80)
 	{
 		if (objstate[index] & 0x80)
 		{
-			//Object already loaded
+			// Object already loaded
 			*entry += 6;
 			return false;
 		}
 		else
 		{
-			//Object loaded, set flag
+			// Object loaded, set flag
 			objstate[index] |= 0x80;
 		}
 	}
 	
-	//Load object
+	// Load object
 	Object *obj = FindFreeObj();
 	if (obj == NULL)
-		return true; //Result from FindFreeObj, not d0
+		return true; // Result from FindFreeObj, not d0
 	
 	obj->pos.l.x.f.u = ((*entry)[0] << 8) | ((*entry)[1] << 0);
 	*entry += 2;
@@ -942,7 +942,7 @@ static bool ChkLoadObj(uint8_t index, const uint8_t **entry)
 		obj->respawn_index = index;
 	obj->type = b4 & 0x7F;
 	
-	obj->scratch.u8[0] = *(*entry)++; //Subtype
+	obj->scratch.u8[0] = *(*entry)++; // Subtype
 	
 	return false;
 }
@@ -953,12 +953,12 @@ void ObjPosLoad()
 	
 	switch (opl_routine)
 	{
-		case 0: //Initialization
+		case 0: // Initialization
 		{
-			//Increment routine
+			// Increment routine
 			opl_routine += 2;
 			
-			//Initialize state
+			// Initialize state
 			opl_layout = level_obj[LEVEL_ZONE(level_id)][LEVEL_ACT(level_id)][0];
 			opl_ptr0 = opl_layout;
 			opl_ptr4 = opl_layout;
@@ -969,7 +969,7 @@ void ObjPosLoad()
 			objstate_right = 1;
 			memset(objstate, 0, sizeof(objstate));
 			
-			//Load immediately on-screen objects
+			// Load immediately on-screen objects
 			int16_t load_x = (scrpos_x.f.u - 0x80) & ~0x7F;
 			if (load_x < 0)
 				load_x = 0;
@@ -997,20 +997,20 @@ void ObjPosLoad()
 			
 			opl_screen = -1;
 		}
-	//Fallthrough
-		case 2: //Main
+	// Fallthrough
+		case 2: // Main
 		{
-			//Check if screen has scrolled and load objects
+			// Check if screen has scrolled and load objects
 			uint8_t index = 0;
 			
 			int16_t load_x = scrpos_x.f.u & ~0x7F;
 			
 			if (load_x < opl_screen)
 			{
-				//Moving left
+				// Moving left
 				opl_screen = load_x;
 				
-				//Load objects
+				// Load objects
 				entry = opl_ptr4;
 				if ((load_x -= 0x80) >= 0)
 				{
@@ -1020,7 +1020,7 @@ void ObjPosLoad()
 						if (entry[4] & 0x80)
 							index = --objstate_left;
 						
-						//Load object
+						// Load object
 						if (!ChkLoadObj(index, &entry))
 						{
 							entry -= 6;
@@ -1036,7 +1036,7 @@ void ObjPosLoad()
 				}
 				opl_ptr4 = entry;
 				
-				//Move right pointer
+				// Move right pointer
 				entry = opl_ptr0;
 				load_x += 0x80 + LOAD_WIDTH;
 				while (entry > opl_layout && load_x <= ((entry[-6] << 8) | (entry[-5] << 0)))
@@ -1049,10 +1049,10 @@ void ObjPosLoad()
 			}
 			else if (load_x > opl_screen)
 			{
-				//Moving right
+				// Moving right
 				opl_screen = load_x;
 				
-				//Load objects
+				// Load objects
 				entry = opl_ptr0;
 				load_x += LOAD_WIDTH;
 				while (load_x > ((entry[0] << 8) | (entry[1] << 0)))
@@ -1060,13 +1060,13 @@ void ObjPosLoad()
 					if (entry[4] & 0x80)
 						index = objstate_right++;
 					
-					//Load object
+					// Load object
 					if (ChkLoadObj(index, &entry))
 						break;
 				}
 				opl_ptr0 = entry;
 				
-				//Move left pointer
+				// Move left pointer
 				entry = opl_ptr4;
 				load_x -= 0x80 + LOAD_WIDTH;
 				while (load_x > ((entry[0] << 8) | (entry[1] << 0)))

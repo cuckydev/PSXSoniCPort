@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-//Palette types
+// Palette types
 typedef enum
 {
 	PalId_SegaBG,
@@ -32,7 +32,7 @@ typedef struct
 	uint8_t ind, len;
 } PaletteFade;
 
-//Palette globals
+// Palette globals
 extern int16_t pal_chgspeed;
 
 extern uint16_t dry_palette[4][16];
@@ -42,13 +42,13 @@ extern uint16_t wet_palette_dup[4][16];
 
 extern PaletteFade palette_fade;
 
-//Palette interface
+// Palette interface
 void PalLoad1(PaletteId id);
 void PalLoad2(PaletteId id);
 void PalLoad3_Water(PaletteId id);
 void PalLoad4_Water(PaletteId id);
 
-//Palette fading
+// Palette fading
 void FadeIn_FromBlack();
 void PaletteFadeIn();
 void PaletteFadeIn_At(uint8_t ind, uint8_t len);

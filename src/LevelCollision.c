@@ -2,7 +2,7 @@
 
 #include "Level.h"
 
-//Collision maps
+// Collision maps
 static const uint8_t angle_map[] = {
 	#include "Resource/Collision/AngleMap.h"
 };
@@ -15,19 +15,19 @@ static const uint8_t width_map[] = {
 	#include "Resource/Collision/WidthMap.h"
 };
 
-//Collision angle buffer
+// Collision angle buffer
 uint8_t angle_buffer0, angle_buffer1;
 
-//Level collision interface
+// Level collision interface
 void FloorLog_Unk()
 {
-	//Some debug function
+	// Some debug function
 }
 
 static const uint8_t chunk0_dummy[2] = {0, 0};
 const uint8_t *FindNearestTile(Object *obj, int16_t x, int16_t y)
 {
-	//Get chunk
+	// Get chunk
 	uint16_t cx = ((uint16_t)x >> 8) & 0x3F;
 	uint16_t cy = ((uint16_t)y >> 8) & 0x7;
 	uint8_t chunk = level_layout[cy][0][cx];
@@ -36,14 +36,14 @@ const uint8_t *FindNearestTile(Object *obj, int16_t x, int16_t y)
 	
 	if (!(chunk & 0x80))
 	{
-		//Return chunk
+		// Return chunk
 		uint8_t tx = (x >> 4) & 0xF;
 		uint8_t ty = (y >> 4) & 0xF;
 		return (level_map256 - 0x200) + (chunk << 9) + (ty << 5) + (tx << 1);
 	}
 	else
 	{
-		//Get chunk id
+		// Get chunk id
 		chunk &= 0x7F;
 		if (obj->render.f.player_loop)
 		{
@@ -51,7 +51,7 @@ const uint8_t *FindNearestTile(Object *obj, int16_t x, int16_t y)
 				chunk = 0x51;
 		}
 		
-		//Return chunk
+		// Return chunk
 		uint8_t tx = (x >> 4) & 0xF;
 		uint8_t ty = (y >> 4) & 0xF;
 		return (level_map256 - 0x200) + (chunk << 9) + (ty << 5) + (tx << 1);
@@ -60,7 +60,7 @@ const uint8_t *FindNearestTile(Object *obj, int16_t x, int16_t y)
 
 static int16_t FindFloor2(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, uint8_t *angle)
 {
-	//Check tile at given position
+	// Check tile at given position
 	const uint8_t *tile = FindNearestTile(obj, x, y);
 	uint16_t tilev = (tile[0] << 8) | (tile[1] << 0);
 	
@@ -68,11 +68,11 @@ static int16_t FindFloor2(Object *obj, int16_t x, int16_t y, uint16_t solid, uin
 	
 	if (tilei != 0 && (tilev & solid))
 	{
-		//Get collision tile
+		// Get collision tile
 		uint16_t ctile = coll_index[tilei];
 		if (ctile != 0)
 		{
-			//Get angle and height map index
+			// Get angle and height map index
 			if (angle != NULL)
 				*angle = angle_map[ctile];
 			ctile <<= 4;
@@ -90,20 +90,20 @@ static int16_t FindFloor2(Object *obj, int16_t x, int16_t y, uint16_t solid, uin
 					*angle = (-(*angle + 0x40)) - 0x40;
 			}
 			
-			//Get height
+			// Get height
 			int16_t height = (int8_t)height_map[ctile + (ind_x & 0xF)];
 			if ((tilev ^ flip) & META_Y_FLIP)
 				height = -height;
 			
-			//Handle hit tile
+			// Handle hit tile
 			if (height > 0)
 			{
-				//Clip to floor
+				// Clip to floor
 				return 0xF - (height + (y & 0xF));
 			}
 			else if (height < 0)
 			{
-				//Clip to ceiling?
+				// Clip to ceiling?
 				int16_t distance = y & 0xF;
 				if (height + distance < 0)
 					return distance ^ ~0;
@@ -111,13 +111,13 @@ static int16_t FindFloor2(Object *obj, int16_t x, int16_t y, uint16_t solid, uin
 		}
 	}
 	
-	//No tile found
+	// No tile found
 	return 0xF - (y & 0xF);
 }
 
 int16_t FindFloor(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, int16_t inc, uint8_t *angle)
 {
-	//Check tile at given position
+	// Check tile at given position
 	const uint8_t *tile = FindNearestTile(obj, x, y);
 	uint16_t tilev = (tile[0] << 8) | (tile[1] << 0);
 	
@@ -125,11 +125,11 @@ int16_t FindFloor(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fl
 	
 	if (tilei != 0 && (tilev & solid))
 	{
-		//Get collision tile
+		// Get collision tile
 		uint16_t ctile = coll_index[tilei];
 		if (ctile != 0)
 		{
-			//Get angle and height map index
+			// Get angle and height map index
 			if (angle != NULL)
 				*angle = angle_map[ctile];
 			ctile <<= 4;
@@ -147,12 +147,12 @@ int16_t FindFloor(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fl
 					*angle = (-(*angle + 0x40)) - 0x40;
 			}
 			
-			//Get height
+			// Get height
 			int16_t height = (int8_t)height_map[ctile + (ind_x & 0xF)];
 			if ((tilev ^ flip) & META_Y_FLIP)
 				height = -height;
 			
-			//Handle hit tile
+			// Handle hit tile
 			if (height > 0)
 			{
 				if (height != 0x10)
@@ -168,13 +168,13 @@ int16_t FindFloor(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fl
 		}
 	}
 	
-	//No tile found, check tile below
+	// No tile found, check tile below
 	return FindFloor2(obj, x, y + inc, solid, flip, angle) + 0x10;
 }
 
 static int16_t FindWall2(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, uint8_t *angle)
 {
-	//Check tile at given position
+	// Check tile at given position
 	const uint8_t *tile = FindNearestTile(obj, x, y);
 	uint16_t tilev = (tile[0] << 8) | (tile[1] << 0);
 	
@@ -182,11 +182,11 @@ static int16_t FindWall2(Object *obj, int16_t x, int16_t y, uint16_t solid, uint
 	
 	if (tilei != 0 && (tilev & solid))
 	{
-		//Get collision tile
+		// Get collision tile
 		uint16_t ctile = coll_index[tilei];
 		if (ctile != 0)
 		{
-			//Get angle and width map index
+			// Get angle and width map index
 			if (angle != NULL)
 				*angle = angle_map[ctile];
 			ctile <<= 4;
@@ -204,20 +204,20 @@ static int16_t FindWall2(Object *obj, int16_t x, int16_t y, uint16_t solid, uint
 					*angle = -*angle;
 			}
 			
-			//Get width
+			// Get width
 			int16_t width = (int8_t)width_map[ctile + (ind_y & 0xF)];
 			if ((tilev ^ flip) & META_X_FLIP)
 				width = -width;
 			
-			//Handle hit tile
+			// Handle hit tile
 			if (width > 0)
 			{
-				//Clip to floor
+				// Clip to floor
 				return 0xF - (width + (x & 0xF));
 			}
 			else if (width < 0)
 			{
-				//Clip to ceiling?
+				// Clip to ceiling?
 				int16_t distance = x & 0xF;
 				if (width + distance < 0)
 					return distance ^ ~0;
@@ -225,13 +225,13 @@ static int16_t FindWall2(Object *obj, int16_t x, int16_t y, uint16_t solid, uint
 		}
 	}
 	
-	//No tile found
+	// No tile found
 	return 0xF - (x & 0xF);
 }
 
 int16_t FindWall(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, int16_t inc, uint8_t *angle)
 {
-	//Check tile at given position
+	// Check tile at given position
 	const uint8_t *tile = FindNearestTile(obj, x, y);
 	uint16_t tilev = (tile[0] << 8) | (tile[1] << 0);
 	
@@ -239,11 +239,11 @@ int16_t FindWall(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fli
 	
 	if (tilei != 0 && (tilev & solid))
 	{
-		//Get collision tile
+		// Get collision tile
 		uint16_t ctile = coll_index[tilei];
 		if (ctile != 0)
 		{
-			//Get angle and width map index
+			// Get angle and width map index
 			if (angle != NULL)
 				*angle = angle_map[ctile];
 			ctile <<= 4;
@@ -261,12 +261,12 @@ int16_t FindWall(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fli
 					*angle = -*angle;
 			}
 			
-			//Get width
+			// Get width
 			int16_t width = (int8_t)width_map[ctile + (ind_y & 0xF)];
 			if ((tilev ^ flip) & META_X_FLIP)
 				width = -width;
 			
-			//Handle hit tile
+			// Handle hit tile
 			if (width > 0)
 			{
 				if (width != 0x10)
@@ -276,24 +276,24 @@ int16_t FindWall(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t fli
 			}
 			else
 			{
-				//Check tile above
+				// Check tile above
 				if (width + (x & 0xF) < 0)
 					return FindWall2(obj, x - inc, y, solid, flip, angle) - 0x10;
 			}
 		}
 	}
 	
-	//No tile found, check tile below
+	// No tile found, check tile below
 	return FindWall2(obj, x + inc, y, solid, flip, angle) + 0x10;
 }
 
-//Object collision functions
+// Object collision functions
 int16_t GetDistance2_Down(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle)
 {
 	int16_t dist = FindFloor(obj, x, y + 10, META_SOLID_LRB, 0, 0x10, &angle_buffer0);
 	if (hit_angle != NULL)
 	{
-		if (angle_buffer0 & 1) //(special angle, run on all sides)
+		if (angle_buffer0 & 1) // (special angle, run on all sides)
 			*hit_angle = 0x00;
 		else
 			*hit_angle = angle_buffer0;
@@ -306,7 +306,7 @@ int16_t GetDistance2_Up(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle)
 	int16_t dist = FindFloor(obj, x, (y - 10) ^ 0xF, META_SOLID_LRB, META_Y_FLIP, -0x10, &angle_buffer0);
 	if (hit_angle != NULL)
 	{
-		if (angle_buffer0 & 1) //(special angle, run on all sides)
+		if (angle_buffer0 & 1) // (special angle, run on all sides)
 			*hit_angle = 0x80;
 		else
 			*hit_angle = angle_buffer0;
@@ -319,7 +319,7 @@ int16_t GetDistance2_Left(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle)
 	int16_t dist = FindWall(obj, (x - 10) ^ 0xF, y, META_SOLID_LRB, META_X_FLIP, -0x10, &angle_buffer0);
 	if (hit_angle != NULL)
 	{
-		if (angle_buffer0 & 1) //(special angle, run on all sides)
+		if (angle_buffer0 & 1) // (special angle, run on all sides)
 			*hit_angle = 0x40;
 		else
 			*hit_angle = angle_buffer0;
@@ -332,7 +332,7 @@ int16_t GetDistance2_Right(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle
 	int16_t dist = FindWall(obj, x + 10, y, META_SOLID_LRB, 0, 0x10, &angle_buffer0);
 	if (hit_angle != NULL)
 	{
-		if (angle_buffer0 & 1) //(special angle, run on all sides)
+		if (angle_buffer0 & 1) // (special angle, run on all sides)
 			*hit_angle = 0xC0;
 		else
 			*hit_angle = angle_buffer0;
@@ -342,15 +342,15 @@ int16_t GetDistance2_Right(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle
 
 int16_t GetDistanceBelowAngle2(Object *obj, uint8_t angle, uint8_t *hit_angle)
 {
-	//Get next position
+	// Get next position
 	int16_t x = (obj->pos.l.x.v + (obj->xsp << 8)) >> 16;
 	int16_t y = (obj->pos.l.y.v + (obj->ysp << 8)) >> 16;
 	
-	//Set angle buffer
+	// Set angle buffer
 	angle_buffer0 = angle;
 	angle_buffer1 = angle;
 	
-	//Get symmetrical angle
+	// Get symmetrical angle
 	uint8_t prev_angle = angle;
 	if ((angle + 0x20) & 0x80)
 	{
@@ -386,7 +386,7 @@ int16_t GetDistanceBelowAngle2(Object *obj, uint8_t angle, uint8_t *hit_angle)
 
 static void DistanceSwap(int16_t *dist0, int16_t *dist1, uint8_t *hit_angle, uint8_t angle)
 {
-	//Get angle and distance to use (use closest one)
+	// Get angle and distance to use (use closest one)
 	uint8_t res_angle = angle_buffer1;
 	if (*dist1 > *dist0)
 	{
@@ -396,7 +396,7 @@ static void DistanceSwap(int16_t *dist0, int16_t *dist1, uint8_t *hit_angle, uin
 		*dist0 = temp;
 	}
 	
-	//Use given angle if hit angle is odd (special angle, run on all sides)
+	// Use given angle if hit angle is odd (special angle, run on all sides)
 	if (hit_angle != NULL)
 	{
 		if (res_angle & 1)
@@ -452,11 +452,11 @@ void GetDistance_Right(Object *obj, int16_t *dist0, int16_t *dist1, uint8_t *hit
 
 void GetDistanceBelowAngle(Object *obj, uint8_t angle, int16_t *dist0, int16_t *dist1, uint8_t *hit_angle)
 {
-	//Set angle buffer
+	// Set angle buffer
 	angle_buffer0 = angle;
 	angle_buffer1 = angle;
 	
-	//Get distance
+	// Get distance
 	switch ((angle + 0x20) & 0xC0)
 	{
 		case 0x00:

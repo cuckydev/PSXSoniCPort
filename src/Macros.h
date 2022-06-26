@@ -2,10 +2,10 @@
 
 #include "Constants.h"
 
-//Planes
+// Planes
 #define MAP_PLANE(base, x, y) ((base) + (((y) * PLANE_WIDTH + (x)) << 1))
 
-//Assertion
+// Assertion
 #define GLUE(a, b) a ## b
 #define GLUE2(a, b) GLUE(a, b)
 
@@ -15,7 +15,7 @@
 	#define STATIC_ASSERT(cond, msg) typedef char GLUE2(static_assertion_failed, __LINE__)[(cond) ? 1 : -1]
 #endif
 
-//Alignment
+// Alignment
 #if defined(__GNUC__)
 	#define ALIGNED2 __attribute__((aligned(2)))
 	#define ALIGNED4 __attribute__((aligned(4)))
@@ -34,7 +34,7 @@
 	#define ALIGNED16
 #endif
 
-//Byte-swapping
+// Byte-swapping
 #ifdef SCP_LIL_ENDIAN
 	#define LESWAP_16(x) (((x) << 8) | ((x) >> 8))
 	#define LESWAP_32(x) ((((x) << 24) & 0xFF000000) | (((x) << 8) & 0x00FF0000) | (((x) >> 8) & 0x0000FF00) | (((x) >> 24) & 0x000000FF))
@@ -43,13 +43,13 @@
 	#define LESWAP_32(x) (x)
 #endif
 
-//Helper macros
+// Helper macros
 #define POSITIVE_MOD(x, y) (((x) % (y) + (y)) % (y))
 
-//LevelScroll.h must be included
+// LevelScroll.h must be included
 #define IS_OFFSCREEN(x) (uint16_t)(((x) & ~0x7F) - ((scrpos_x.f.u - 0x80) & ~0x7F)) > (((SCREEN_WIDTH + 0x80) & ~0x7F) + 0x100)
 
-//Resource include
+// Resource include
 #ifdef SCP_REV00
 	#define RES_REV(x) <Resource/x##REV00.h>
 #else

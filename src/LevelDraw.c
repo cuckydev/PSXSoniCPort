@@ -6,17 +6,17 @@
 
 #include "Backend/VDP.h"
 
-//Scroll dimensions (hack so that dimensions that aren't a multiple of 16 work)
+// Scroll dimensions (hack so that dimensions that aren't a multiple of 16 work)
 #define SCROLL_WIDTH  ((SCREEN_WIDTH  + 15) & ~15)
 #define SCROLL_HEIGHT ((SCREEN_HEIGHT + 15) & ~15)
 
-//Scroll blocks
+// Scroll blocks
 int16_t scroll_block1_size, scroll_block2_size, scroll_block3_size, scroll_block4_size;
 
-//Block drawing functions
+// Block drawing functions
 size_t CalcVRAMPos(int16_t sx, int16_t sy, int16_t x, int16_t y)
 {
-	//Convert coordinates to plane coordinates
+	// Convert coordinates to plane coordinates
 	uint16_t px = ((x + sx) >> 2) & ~3;
 	uint16_t py = ((y + sy) >> 2) & ~3;
 	return (POSITIVE_MOD(py, PLANE_HEIGHT << 1) * PLANE_WIDTH) + POSITIVE_MOD(px, PLANE_WIDTH << 1);
@@ -24,11 +24,11 @@ size_t CalcVRAMPos(int16_t sx, int16_t sy, int16_t x, int16_t y)
 
 void GetBlockData(const uint8_t **meta, const uint8_t **block, int16_t sx, int16_t sy, int16_t x, int16_t y, uint8_t *layout)
 {
-	//Offset coordinates by screen coordinates
+	// Offset coordinates by screen coordinates
 	x += sx;
 	y += sy;
 	
-	//Get chunk position
+	// Get chunk position
 	int16_t cx = (x >> 8) & 0x3F;
 	int16_t cy = (y >> 8) & 0x7;
 	uint8_t chunk = layout[(cy << 7) + cx] & 0x7F;
@@ -39,13 +39,13 @@ void GetBlockData(const uint8_t **meta, const uint8_t **block, int16_t sx, int16
 		return;
 	}
 	
-	//Get 256x256 map pointer
+	// Get 256x256 map pointer
 	uint8_t tx = (x >> 4) & 0xF;
 	uint8_t ty = (y >> 4) & 0xF;
 	const uint8_t *metap = (level_map256 - 0x200) + (chunk << 9) + (ty << 5) + (tx << 1);
 	*meta = metap;
 	
-	//Get 16x16 map pointer
+	// Get 16x16 map pointer
 	size_t tile = (metap[0] << 8) | (metap[1] << 0);
 	tile = tile & 0x3FF;
 	
@@ -64,9 +64,9 @@ void DrawBlock(const uint8_t *meta, const uint8_t *block, size_t offset)
 {
 	uint8_t flag = meta[0];
 	
-	if (flag & 0x08) //X flip
+	if (flag & 0x08) // X flip
 	{
-		if (flag & 0x10) //Y flip
+		if (flag & 0x10) // Y flip
 		{
 			WRITE_TILE((PLANE_WIDTH << 1) + 2, 0x1800)
 			WRITE_TILE((PLANE_WIDTH << 1) + 0, 0x1800)
@@ -81,7 +81,7 @@ void DrawBlock(const uint8_t *meta, const uint8_t *block, size_t offset)
 			WRITE_TILE((PLANE_WIDTH << 1) + 0, 0x0800)
 		}
 	}
-	else if (flag & 0x10) //Y flip
+	else if (flag & 0x10) // Y flip
 	{
 		WRITE_TILE((PLANE_WIDTH << 1) + 0, 0x1000)
 		WRITE_TILE((PLANE_WIDTH << 1) + 2, 0x1000)
@@ -164,7 +164,7 @@ void Draw_GHZ_Bg(int16_t sy, uint8_t *layout, size_t offset)
 	}
 }
 
-//Level drawing functions
+// Level drawing functions
 void DrawChunks(int16_t sx, int16_t sy, uint8_t *layout, size_t offset)
 {
 	int16_t y = -16;
@@ -182,9 +182,9 @@ void LoadTilesFromStart()
 		if (LEVEL_ZONE(level_id) == ZoneId_GHZ)
 			Draw_GHZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
 		else if (LEVEL_ZONE(level_id) == ZoneId_MZ)
-			{;}//Draw_MZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
+			{;}// Draw_MZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
 		else if (level_id == LEVEL_ID(ZoneId_SBZ, 0))
-			{;}//Draw_SBZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
+			{;}// Draw_SBZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
 		else if (LEVEL_ZONE(level_id) == ZoneId_EndZ)
 			Draw_GHZ_Bg(bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
 		else
@@ -194,12 +194,12 @@ void LoadTilesFromStart()
 
 void DrawBGScrollBlock1(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout, size_t offset)
 {
-	//TODO: REV00
-	//Check if any flags have been set
+	// TODO: REV00
+	// Check if any flags have been set
 	if (*flag == 0)
 		return;
 	
-	//Handle flags
+	// Handle flags
 	if (*flag & SCROLL_FLAG_UP)
 	{
 		DrawBlocks_LR_2(offset, CalcVRAMPos(sx, sy, -16, -16), sx, sy, -16, -16, layout, PLANE_WIDTH / 2);
@@ -234,12 +234,12 @@ void DrawBGScrollBlock1(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout,
 
 void DrawBGScrollBlock2(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout, size_t offset)
 {
-	//TODO: REV00
-	//Check if any flags have been set
+	// TODO: REV00
+	// Check if any flags have been set
 	if (*flag == 0)
 		return;
 	
-	//Run completely different code if in Scrap Brain Zone (what)
+	// Run completely different code if in Scrap Brain Zone (what)
 	if (LEVEL_ZONE(level_id) != ZoneId_SBZ)
 	{
 		if (*flag & SCROLL_FLAG_LEFT2)
@@ -255,18 +255,18 @@ void DrawBGScrollBlock2(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout,
 	}
 	else
 	{
-		//TODO
+		// TODO
 	}
 }
 
 void DrawBGScrollBlock3(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout, size_t offset)
 {
-	//TODO: REV00
-	//Check if any flags have been set
+	// TODO: REV00
+	// Check if any flags have been set
 	if (*flag == 0)
 		return;
 	
-	//Run completely different code if in Marble Zone (what)
+	// Run completely different code if in Marble Zone (what)
 	if (LEVEL_ZONE(level_id) != ZoneId_MZ)
 	{
 		if (*flag & SCROLL_FLAG_LEFT2)
@@ -282,18 +282,18 @@ void DrawBGScrollBlock3(int16_t sx, int16_t sy, uint16_t *flag, uint8_t *layout,
 	}
 	else
 	{
-		//TODO
+		// TODO
 	}
 }
 
 void LoadTilesAsYouMove()
 {
-	//Scroll background
+	// Scroll background
 	DrawBGScrollBlock1(bg_scrpos_x.f.u,  bg_scrpos_y.f.u,  &bg1_scroll_flags, level_layout[0][1], VRAM_BG);
 	DrawBGScrollBlock2(bg2_scrpos_x.f.u, bg2_scrpos_y.f.u, &bg2_scroll_flags, level_layout[0][1], VRAM_BG);
 	DrawBGScrollBlock3(bg3_scrpos_x.f.u, bg3_scrpos_y.f.u, &bg3_scroll_flags, level_layout[0][1], VRAM_BG);
 	
-	//Scroll foreground
+	// Scroll foreground
 	int16_t sx = scrpos_x_dup.f.u;
 	int16_t sy = scrpos_y_dup.f.u;
 	uint8_t *layout = level_layout[0][0];
@@ -327,10 +327,10 @@ void LoadTilesAsYouMove_BGOnly()
 {
 	DrawBGScrollBlock1(bg_scrpos_x.f.u,  bg_scrpos_y.f.u,  &bg1_scroll_flags, level_layout[0][1], VRAM_BG);
 	DrawBGScrollBlock2(bg2_scrpos_x.f.u, bg2_scrpos_y.f.u, &bg2_scroll_flags, level_layout[0][1], VRAM_BG);
-	//No scroll block 3, even in REV01... odd
+	// No scroll block 3, even in REV01... odd
 }
 
-//Level art animation
+// Level art animation
 static const uint8_t art_ghz_waterfall[] = {
 	#include "Resource/Art/GHZWaterfall.h"
 };
@@ -348,46 +348,46 @@ static void AniArt_GiantRing()
 
 void AnimateLevelGfx()
 {
-	//Don't run if game is paused
+	// Don't run if game is paused
 	if (pause)
 		return;
 	
-	//Animate giant ring
+	// Animate giant ring
 	AniArt_GiantRing();
 	
-	//Run level animation
+	// Run level animation
 	switch (LEVEL_ZONE(level_id))
 	{
 		case ZoneId_GHZ:
-			//Animate waterfall
+			// Animate waterfall
 			if (--level_anim[0].time < 0)
 			{
-				//Increment frame and reset timer
+				// Increment frame and reset timer
 				level_anim[0].time = 5;
 				uint8_t frame = level_anim[0].frame++ & 1;
 				
-				//Write to VRAM
+				// Write to VRAM
 				VDP_SeekVRAM(0x6F00);
 				VDP_WriteVRAM(art_ghz_waterfall + (frame * 8 * 0x20), 8 * 0x20);
 			}
 			
-			//Animate large flowers
+			// Animate large flowers
 			if (--level_anim[1].time < 0)
 			{
-				//Increment frame and reset timer
+				// Increment frame and reset timer
 				level_anim[1].time = 15;
 				uint8_t frame = level_anim[1].frame++ & 1;
 				
-				//Write to VRAM
+				// Write to VRAM
 				VDP_SeekVRAM(0x6B80);
 				VDP_WriteVRAM(art_ghz_flower_large + (frame * 16 * 0x20), 16 * 0x20);
 			}
 			
-			//Animate small flowers
+			// Animate small flowers
 			if (--level_anim[2].time < 0)
 			{
 				
-				//Increment frame and reset timer
+				// Increment frame and reset timer
 				level_anim[2].time = 7;
 				
 				static const uint8_t seq[4] = {0, 1, 2, 1};
@@ -395,7 +395,7 @@ void AnimateLevelGfx()
 				if (!(frame & 1))
 					level_anim[2].time = 127;
 				
-				//Write to VRAM
+				// Write to VRAM
 				VDP_SeekVRAM(0x6D80);
 				VDP_WriteVRAM(art_ghz_flower_small + (frame * 12 * 0x20), 12 * 0x20);
 			}

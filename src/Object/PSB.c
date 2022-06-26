@@ -1,6 +1,6 @@
 #include "Object.h"
 
-//'PRESS START BUTTON' Assets
+// 'PRESS START BUTTON' Assets
 static const uint8_t anim_psb[] = {
 	#include "Resource/Animation/PSB.h"
 };
@@ -9,44 +9,44 @@ static const uint8_t map_psb[] = {
 	#include "Resource/Mappings/PSB.h"
 };
 
-//'PRESS START BUTTON' object
+// 'PRESS START BUTTON' object
 void Obj_PSB(Object *obj)
 {
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Increment routine and set position
+		case 0: // Initialization
+			// Increment routine and set position
 			obj->routine += 2;
 			obj->pos.s.x = 0xD0 + (PLANE_WIDEADD * 4);
 			obj->pos.s.y = 0x130;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = map_psb;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x200);
 			
-			//Handle different frames
+			// Handle different frames
 			if (obj->frame >= 2)
 			{
 				obj->routine += 2;
 				if (obj->frame == 3)
 				{
-					//Trademark
+					// Trademark
 					obj->tile = TILE_MAP(0, 1, 0, 0, 0x510);
 					obj->pos.s.x = 0x170 + (PLANE_WIDEADD * 4);
 					obj->pos.s.y = 0xF8;
 				}
 				else if (obj->frame == 2)
 				{
-					//Sonic mask
-					obj->pos.s.x -= SCREEN_WIDEADD2; //Widescreen hack so you don't see the masking sprites
+					// Sonic mask
+					obj->pos.s.x -= SCREEN_WIDEADD2; // Widescreen hack so you don't see the masking sprites
 				}
 				break;
 			}
-	//Fallthrough
-		case 2: //Press Start Button
+	// Fallthrough
+		case 2: // Press Start Button
 			AnimateSprite(obj, anim_psb);
 			break;
-		case 4: //TM or Sonic mask
+		case 4: // TM or Sonic mask
 			break;
 	}
 	

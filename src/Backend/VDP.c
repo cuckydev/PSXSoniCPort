@@ -6,16 +6,21 @@
 #include <string.h>
 #include <stdlib.h>
 
-//VDP compile options
-#define VDP_SANITY //Enable sanity checks for the VDP (slower, but technically safer, basically for testing)
-//#define VDP_PALETTE_DISPLAY //Enable palette display
+#include <sys/types.h>
+#include <psxetc.h>
+#include <psxgte.h>
+#include <psxgpu.h>
 
-//VDP masks
+// VDP compile options
+#define VDP_SANITY // Enable sanity checks for the VDP (slower, but technically safer, basically for testing)
+// #define VDP_PALETTE_DISPLAY // Enable palette display
+
+// VDP masks
 #define VDP_MASK_PLANEPRI (1 << 0)
 #define VDP_MASK_SPRITE   (1 << 1)
 
-//VDP internal state
-static ALIGNED2 uint8_t vdp_vram[VRAM_SIZE];
+// VDP internal state
+static ALIGNED4 uint8_t vdp_vram[VRAM_SIZE];
 static uint16_t vdp_cram[4][16];
 
 static uint8_t *vdp_vram_p;
@@ -31,10 +36,15 @@ static int16_t vdp_hint_pos;
 
 static MD_Vector vdp_hint, vdp_vint;
 
-//VDP interface
+// VDP interface
 int VDP_Init(const MD_Header *header)
 {
-	//Initialize VDP state
+	// Initialize GPU
+	ResetGraph(0);
+
+	SetDispMask(1);
+
+	// Initialize VDP state
 	vdp_plane_a_location = 0;
 	vdp_plane_b_location = 0;
 	vdp_sprite_location  = 0;
@@ -216,8 +226,23 @@ void VDP_SetHIntPosition(int16_t pos)
 	vdp_hint_pos = pos;
 }
 
-//VDP rendering
+// VDP rendering
 void VDP_Render()
 {
+	// Send vertical interrupt
+	vdp_vint();
 	
+	// DMA vram to PSX vram
+	u_long *vrama = (u_long*)vdp_vram;
+	for (int i = 0; i < 256; i += 2)
+	{
+		RECT duplo = { i, 0, 2, 256 };
+		DrawSync(0);
+		LoadImage(&duplo, vrama);
+		vrama += 256;
+	}
+
+	// Delay
+	DrawSync(0);
+	VSync(0);
 }

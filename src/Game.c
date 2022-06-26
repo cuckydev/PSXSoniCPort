@@ -18,10 +18,10 @@
 	#include "GM_SSRG.h"
 #endif
 
-//Game
+// Game
 ALIGNED4 uint8_t buffer0000[0xA400];
 
-uint8_t gamemode; //MSB acts as a title card flag
+uint8_t gamemode; // MSB acts as a title card flag
 
 int16_t demo;
 uint16_t demo_length;
@@ -31,43 +31,43 @@ uint8_t credits_cheat;
 
 uint8_t debug_cheat, debug_mode;
 
-uint8_t jpad2_hold,  jpad2_press; //Joypad 2 state
-uint8_t jpad1_hold1, jpad1_press1; //Joypad 1 state
-uint8_t jpad1_hold2, jpad1_press2; //Sonic controls
+uint8_t jpad2_hold,  jpad2_press; // Joypad 2 state
+uint8_t jpad1_hold1, jpad1_press1; // Joypad 1 state
+uint8_t jpad1_hold2, jpad1_press2; // Sonic controls
 
 uint32_t vbla_count;
 
-//Global assets
+// Global assets
 const uint8_t art_text[] = {
 	#include "Resource/Art/Text.h"
 };
 
-//General game functions
+// General game functions
 void ReadJoypads()
 {
 	uint8_t state;
 	
-	//Read joypad 1
+	// Read joypad 1
 	state = Joypad_GetState1();
 	jpad1_press1 = state & ~jpad1_hold1;
 	jpad1_hold1 = state;
 	
-	//Read joypad 2
+	// Read joypad 2
 	state = Joypad_GetState2();
 	jpad2_press = state & ~jpad2_hold;
 	jpad2_hold = state;
 }
 
-//Game entry point
+// Game entry point
 void EntryPoint()
 {
-	//Initialize game system
+	// Initialize game system
 	VDPSetupGame();
 	
-	//Initialize game state
+	// Initialize game state
 	gamemode = GameMode_Sega;
 	
-	//Run game loop
+	// Run game loop
 	while (1)
 	{
 		switch (gamemode & 0x7F)
@@ -98,20 +98,20 @@ void EntryPoint()
 	}
 }
 
-//Interrupts
+// Interrupts
 void WriteVRAMBuffers()
 {
-	//Read joypad state
+	// Read joypad state
 	ReadJoypads();
 	
-	//Copy palette
+	// Copy palette
 	VDP_SeekCRAM(0);
 	if (wtr_state)
 		VDP_WriteCRAM(&wet_palette[0][0], 0x40);
 	else
 		VDP_WriteCRAM(&dry_palette[0][0], 0x40);
 	
-	//Copy buffers
+	// Copy buffers
 	VDP_SeekVRAM(VRAM_SPRITES);
 	VDP_WriteVRAM((const uint8_t*)sprite_buffer, sizeof(sprite_buffer));
 	VDP_SeekVRAM(VRAM_HSCROLL);
@@ -123,19 +123,19 @@ void VBlank()
 	uint8_t routine = vbla_routine;
 	if (vbla_routine != 0x00)
 	{
-		//Set VDP state
+		// Set VDP state
 		VDP_SetVScroll(vid_scrpos_y_dup, vid_bg_scrpos_y_dup);
 		
-		//Set screen state
+		// Set screen state
 		vbla_routine = 0x00;
 	}
 	
-	//Run VBlank routine
+	// Run VBlank routine
 	switch (routine)
 	{
 		case 0x02:
 			WriteVRAMBuffers();
-	//Fallthrough
+	// Fallthrough
 		case 0x14:
 			if (demo_length)
 				demo_length--;
@@ -148,24 +148,24 @@ void VBlank()
 				demo_length--;
 			break;
 		case 0x08:
-			//Read joypad state
+			// Read joypad state
 			ReadJoypads();
 			
-			//Copy palette
+			// Copy palette
 			VDP_SeekCRAM(0);
 			if (wtr_state)
 				VDP_WriteCRAM(&wet_palette[0][0], 0x40);
 			else
 				VDP_WriteCRAM(&dry_palette[0][0], 0x40);
 			
-			//Copy buffers
+			// Copy buffers
 			VDP_SetHIntPosition(hbla_pos);
 			VDP_SeekVRAM(VRAM_SPRITES);
 			VDP_WriteVRAM((const uint8_t*)sprite_buffer, sizeof(sprite_buffer));
 			VDP_SeekVRAM(VRAM_HSCROLL);
 			VDP_WriteVRAM((const uint8_t*)hscroll_buffer, sizeof(hscroll_buffer));
 			
-			//Update Sonic's art
+			// Update Sonic's art
 			if (sonframe_chg)
 			{
 				VDP_SeekVRAM(0xF000);
@@ -173,7 +173,7 @@ void VBlank()
 				sonframe_chg = false;
 			}
 			
-			//Copy duplicate plane positions and flags
+			// Copy duplicate plane positions and flags
 			scrpos_x_dup.v     = scrpos_x.v;
 			scrpos_y_dup.v     = scrpos_y.v;
 			bg_scrpos_x_dup.v  = bg_scrpos_x.v;
@@ -188,42 +188,42 @@ void VBlank()
 			bg2_scroll_flags_dup = bg2_scroll_flags;
 			bg3_scroll_flags_dup = bg3_scroll_flags;
 			
-			if (hbla_pos >= 96) //Uh?
+			if (hbla_pos >= 96) // Uh?
 			{
-				//Scroll camera
+				// Scroll camera
 				LoadTilesAsYouMove();
 				
-				//Update level animations and HUD
+				// Update level animations and HUD
 				AnimateLevelGfx();
 				HUD_Update();
 				
-				//Process PLCs
+				// Process PLCs
 				ProcessDPLC2();
 				
-				//Decrement demo timer
+				// Decrement demo timer
 				if (demo_length)
 					demo_length--;
 			}
 			break;
 		case 0x0A:
-			//Read joypad state
+			// Read joypad state
 			ReadJoypads();
 			
-			//Copy palette
+			// Copy palette
 			VDP_SeekCRAM(0);
 			VDP_WriteCRAM(&dry_palette[0][0], 0x40);
 			
-			//Copy buffers
+			// Copy buffers
 			VDP_SetHIntPosition(hbla_pos);
 			VDP_SeekVRAM(VRAM_SPRITES);
 			VDP_WriteVRAM((const uint8_t*)sprite_buffer, sizeof(sprite_buffer));
 			VDP_SeekVRAM(VRAM_HSCROLL);
 			VDP_WriteVRAM((const uint8_t*)hscroll_buffer, sizeof(hscroll_buffer));
 			
-			//Run palette cycle
+			// Run palette cycle
 			PCycle_SS();
 			
-			//Update Sonic's art
+			// Update Sonic's art
 			if (sonframe_chg)
 			{
 				VDP_SeekVRAM(0xF000);
@@ -231,29 +231,29 @@ void VBlank()
 				sonframe_chg = false;
 			}
 			
-			//Decrement demo timer
+			// Decrement demo timer
 			if (demo_length)
 				demo_length--;
 			break;
 		case 0x0C:
-			//Read joypad state
+			// Read joypad state
 			ReadJoypads();
 			
-			//Copy palette
+			// Copy palette
 			VDP_SeekCRAM(0);
 			if (wtr_state)
 				VDP_WriteCRAM(&wet_palette[0][0], 0x40);
 			else
 				VDP_WriteCRAM(&dry_palette[0][0], 0x40);
 			
-			//Copy buffers
+			// Copy buffers
 			VDP_SetHIntPosition(hbla_pos);
 			VDP_SeekVRAM(VRAM_SPRITES);
 			VDP_WriteVRAM((const uint8_t*)sprite_buffer, sizeof(sprite_buffer));
 			VDP_SeekVRAM(VRAM_HSCROLL);
 			VDP_WriteVRAM((const uint8_t*)hscroll_buffer, sizeof(hscroll_buffer));
 			
-			//Update Sonic's art
+			// Update Sonic's art
 			if (sonframe_chg)
 			{
 				VDP_SeekVRAM(0xF000);
@@ -261,7 +261,7 @@ void VBlank()
 				sonframe_chg = false;
 			}
 			
-			//Copy duplicate plane positions and flags
+			// Copy duplicate plane positions and flags
 			scrpos_x_dup.v     = scrpos_x.v;
 			scrpos_y_dup.v     = scrpos_y.v;
 			bg_scrpos_x_dup.v  = bg_scrpos_x.v;
@@ -276,14 +276,14 @@ void VBlank()
 			bg2_scroll_flags_dup = bg2_scroll_flags;
 			bg3_scroll_flags_dup = bg3_scroll_flags;
 			
-			//Scroll camera
+			// Scroll camera
 			LoadTilesAsYouMove();
 			
-			//Update level animations and HUD
+			// Update level animations and HUD
 			AnimateLevelGfx();
 			HUD_Update();
 			
-			//Process PLCs
+			// Process PLCs
 			ProcessDPLC();
 			break;
 		case 0x12:
@@ -292,9 +292,9 @@ void VBlank()
 			break;
 	}
 	
-	//Update music
+	// Update music
 	
-	//Increment VBlank counter
+	// Increment VBlank counter
 	vbla_count++;
 }
 

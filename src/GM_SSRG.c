@@ -1,4 +1,4 @@
-//Ported from MarkeyJester's 'SSRG Splash Screen'
+// Ported from MarkeyJester's 'SSRG Splash Screen'
 
 #include "GM_SSRG.h"
 
@@ -12,11 +12,11 @@
 
 #include <string.h>
 
-//SSRG memory
+// SSRG memory
 #define ssrg_scroll_fg (*(int16_t*)(buffer0000 + 0x7800))
 #define ssrg_scroll_bg (*(int16_t*)(buffer0000 + 0x7808))
 
-//SSRG assets
+// SSRG assets
 static const uint8_t art_link[] = {
 	#include "Resource/SSRG/ArtLink.h"
 	,0,
@@ -50,7 +50,7 @@ static const uint16_t pal_ssrg[] = {
 	0x0000,0x0404,0x0808,0x0E0E,0x00E0,0x00C0,0x00A0,0x0080,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
 };
 
-//SSRG planes
+// SSRG planes
 static void CopyTilemap_Single(uint16_t v, size_t offset, size_t width, size_t height)
 {
 	while (height-- > 0)
@@ -82,7 +82,7 @@ static void SRG_ScrollFG()
 {
 	int16_t *bufp;
 	
-	//Scroll FG
+	// Scroll FG
 	bufp = &hscroll_buffer[115][0];
 	
 	int16_t scroll_fg = ssrg_scroll_fg + 0x30;
@@ -94,7 +94,7 @@ static void SRG_ScrollFG()
 		{ *bufp++ = scroll_fg; *bufp++ = 0; }
 	}
 	
-	//Scroll BG
+	// Scroll BG
 	bufp = &hscroll_buffer[0][0];
 	
 	int16_t scroll_bg = ssrg_scroll_bg;
@@ -104,19 +104,19 @@ static void SRG_ScrollFG()
 
 static void SRG_DrawFG()
 {
-	//Get scroll value
+	// Get scroll value
 	uint16_t scroll_fg = (ssrg_scroll_fg * 2) - 0x40;
 	
 	if (scroll_fg <= 0x110)
 	{
-		//Get scroll offset
+		// Get scroll offset
 		uint16_t scroll_off = ((scroll_fg & 0x01F8) >> 2);
 		
-		//Get scroll offsets
+		// Get scroll offsets
 		size_t offset = MAP_PLANE(VRAM_FG, 2, 14) + PLANE_WIDEADD + PLANE_TALLADD + scroll_off;
 		const uint8_t *mapp = buffer0000 + scroll_off;
 		
-		//Write plane data
+		// Write plane data
 		for (int i = 0; i < 3; i++)
 		{
 			uint16_t v = ((mapp[0] << 8) | (mapp[1] << 0)) + 0x2000;
@@ -128,21 +128,21 @@ static void SRG_DrawFG()
 	}
 	else
 	{
-		//Make sure we've reached the starting point
+		// Make sure we've reached the starting point
 		scroll_fg -= 0x170;
 		if (scroll_fg & 0x8000)
 			return;
 		
-		//Have we reached PASSED the ending point?
+		// Have we reached PASSED the ending point?
 		if (scroll_fg >= 0x60)
 			return;
 		
-		//Flashing
+		// Flashing
 		uint16_t add;
 		if (scroll_fg >= 0x50 || (scroll_fg & 8) == 0)
-			add = 0x0000; //White
+			add = 0x0000; // White
 		else
-			add = 0x2000; //Grey
+			add = 0x2000; // Grey
 		CopyTilemap_Add(buffer0000, 0xC704 + PLANE_WIDEADD, 35, 3, add);
 	}
 }
@@ -153,7 +153,7 @@ static void UpdateScrollPositions(Object *obj)
 	vid_bg_scrpos_y_dup = -obj->pos.s.y;
 }
 
-//SSRG objects
+// SSRG objects
 static void SpeedToPosHud(Object *obj)
 {
 	uint32_t xadd = (int32_t)obj->xsp << 8;
@@ -163,11 +163,11 @@ static void SpeedToPosHud(Object *obj)
 	obj->pos.s.yl = y;
 }
 
-//Letters object
+// Letters object
 typedef struct
 {
-	uint16_t pad; //0x28-0x29
-	uint16_t timer; //0x2A
+	uint16_t pad; // 0x28-0x29
+	uint16_t timer; // 0x2A
 } Scratch_Letters;
 
 static void Obj_Letters(Object *obj)
@@ -175,7 +175,7 @@ static void Obj_Letters(Object *obj)
 	Scratch_Letters *scratch = (Scratch_Letters*)&obj->scratch;
 	
 	static const uint16_t data[4][8] = {
-		//0xXXXX, 0xYYYY, 0xVRAM, 0xTIME, 0xXSPD, 0xYSPD, 0xMAPI, 0x????
+		// 0xXXXX, 0xYYYY, 0xVRAM, 0xTIME, 0xXSPD, 0xYSPD, 0xMAPI, 0x????
 		{0x0182,0x0180,0x0001,0x0001,0xFF00,0xF400,0x0000,0x0000},
 		{0x01A8,0x0180,0x0001,0x0011,0xFF00,0xF400,0x0000,0x0000},
 		{0x01D0,0x0180,0x0011,0x0021,0xFF00,0xF400,0x0000,0x0000},
@@ -189,9 +189,9 @@ static void Obj_Letters(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
+		case 0: // Initialization
 		{
-			//Increment routine counter and read object data
+			// Increment routine counter and read object data
 			obj->routine += 2;
 			
 			const uint16_t *datap = data[obj->type - 1];
@@ -205,28 +205,28 @@ static void Obj_Letters(Object *obj)
 			obj->ysp = *datap++;
 			obj->frame = *datap++;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = mappings;
-			obj->priority = 0x20; //What the hell?
+			obj->priority = 0x20; // What the hell?
 			obj->width_pixels = 32;
 			
 			obj->y_rad = 32;
 		}
-	//Fallthrough
-		case 2: //Wait for timer to expire
+	// Fallthrough
+		case 2: // Wait for timer to expire
 			if (--scratch->timer == 0)
 				obj->routine += 2;
 			DisplaySprite(obj);
 			break;
-		case 4: //Fly up
-			//Fall and draw
+		case 4: // Fly up
+			// Fall and draw
 			SpeedToPosHud(obj);
 			if ((obj->ysp += 0x40) >= 0 && 0xF0 < obj->pos.s.y)
 				obj->routine += 2;
 			DisplaySprite(obj);
 			break;
-		case 6: //Spring
-			//Spring back upwards and draw
+		case 6: // Spring
+			// Spring back upwards and draw
 			SpeedToPosHud(obj);
 			if ((obj->ysp -= 0x80) < 0 && 0xE8 >= obj->pos.s.y)
 			{
@@ -236,10 +236,10 @@ static void Obj_Letters(Object *obj)
 			}
 			DisplaySprite(obj);
 			break;
-		case 8: //Slow down
+		case 8: // Slow down
 			if (obj->xsp < 0)
 			{
-				//Slow down then draw
+				// Slow down then draw
 				SpeedToPosHud(obj);
 				obj->xsp += 0x20;
 				DisplaySprite(obj);
@@ -247,46 +247,46 @@ static void Obj_Letters(Object *obj)
 			}
 			else if ((++scratch->timer) & 1)
 			{
-				//Handle flashing
+				// Handle flashing
 				if ((obj->tile >> TILE_PALETTE_SHIFT) >= 2)
 				{
-					//Reset palette and state, increment routine
+					// Reset palette and state, increment routine
 					obj->tile &= ~TILE_PALETTE_AND;
 					obj->routine += 2;
 					obj->xsp = 0;
 					obj->ysp = 0;
-					obj->pos.s.y &= 0x1FF; //Immediately overwritten
+					obj->pos.s.y &= 0x1FF; // Immediately overwritten
 					obj->pos.s.y = 0xE4;
 					DisplaySprite(obj);
 					break;
 				}
 				else
 				{
-					//Increment palette
+					// Increment palette
 					obj->tile += TILE_MAP(0, 1, 0, 0, 0);
 				}
 			}
-	//Fallthrough
-		case 10: //Idle
-			//Check if we've been knocked by the square
+	// Fallthrough
+		case 10: // Idle
+			// Check if we've been knocked by the square
 			SpeedToPosHud(obj);
 			
 			if (obj->pos.s.y != 0xE4)
 			{
 				if (obj->pos.s.y < 0xE4)
 				{
-					//Gravity
+					// Gravity
 					obj->ysp += 0x80;
 				}
 				else
 				{
-					//Reset Y speed and position
+					// Reset Y speed and position
 					obj->ysp = 0;
 					obj->pos.s.y = 0xE4;
 				}
 			}
 			
-			//Decrease X speed
+			// Decrease X speed
 			if (obj->xsp < 0)
 				obj->xsp += 0x40;
 			else if (obj->xsp > 0)
@@ -297,12 +297,12 @@ static void Obj_Letters(Object *obj)
 	}
 }
 
-//Square object
+// Square object
 typedef struct
 {
-	uint16_t pad; //0x28-0x29
-	uint16_t timer; //0x2A
-	int16_t speed; //0x2C
+	uint16_t pad; // 0x28-0x29
+	uint16_t timer; // 0x2A
+	int16_t speed; // 0x2C
 } Scratch_Square;
 
 static void Obj_Square(Object *obj)
@@ -324,8 +324,8 @@ static void Obj_Square(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Increment routine and initialize state
+		case 0: // Initialization
+			// Increment routine and initialize state
 			obj->routine += 2;
 			
 			obj->pos.s.x = -0xC0;
@@ -336,31 +336,31 @@ static void Obj_Square(Object *obj)
 			
 			UpdateScrollPositions(obj);
 			return;
-		case 2: //Wait for timer to expire
+		case 2: // Wait for timer to expire
 			if (--scratch->timer == 0)
 			{
 				obj->routine += 2;
 				scratch->timer = (PLANE_WIDEADD / 2) * -2;
 			}
-			DisplaySprite(obj); //Null mappings, thank you Markey!
+			DisplaySprite(obj); // Null mappings, thank you Markey!
 			return;
-		case 4: //Play sound
+		case 4: // Play sound
 			obj->routine += 2;
-			//moveq	#0xFFFFFFBC,d0				; set to play spin release SFX
-			//jsr	PlaySound_Special			; play SFX //TODO
-	//Fallthrough
-		case 6: //Spin in
+			// moveq	#0xFFFFFFBC,d0				; set to play spin release SFX
+			// jsr	PlaySound_Special			; play SFX // TODO
+	// Fallthrough
+		case 6: // Spin in
 			scratch->timer += 2;
 			if (obj->pos.s.x >= 0x60 + (PLANE_WIDEADD * 4))
 			{
-				//Hit the 'SSRG' text
+				// Hit the 'SSRG' text
 				obj->routine += 2;
-				//moveq	#0xFFFFFFBD,d0				; set to play spiked chandelier SFX
-				//jsr	PlaySound_Special			; play SFX //TODO
+				// moveq	#0xFFFFFFBD,d0				; set to play spiked chandelier SFX
+				// jsr	PlaySound_Special			; play SFX // TODO
 				obj->xsp = -0x100;
 				obj->ysp = -0x400;
 				
-				//Knock 'SSRG' text
+				// Knock 'SSRG' text
 				objects[0].xsp = 0x300;
 				objects[0].ysp = -0x400;
 				objects[1].xsp = 0x300;
@@ -371,13 +371,13 @@ static void Obj_Square(Object *obj)
 				objects[3].ysp = -0x100;
 			}
 			break;
-		case 8: //Knocked back and landing
+		case 8: // Knocked back and landing
 			scratch->timer -= 8;
 			
-			//Fall
+			// Fall
 			if ((obj->ysp += 0x20) >= 0 && obj->pos.s.y >= 0x20)
 			{
-				//Landed
+				// Landed
 				obj->pos.s.y = 0x20;
 				obj->xsp = 0;
 				obj->ysp = 0;
@@ -385,12 +385,12 @@ static void Obj_Square(Object *obj)
 				scratch->speed = 0xA40;
 			}
 			break;
-		case 10: //Finish spinning
+		case 10: // Finish spinning
 		{
 			int16_t speed = scratch->speed;
 			if (speed < 0)
 			{
-				//Invert palette brightness
+				// Invert palette brightness
 				if (dry_palette[3][1] != 0xE0E)
 					dry_palette[3][1] += 0x202;
 				if (dry_palette[3][3] != 0x404)
@@ -398,7 +398,7 @@ static void Obj_Square(Object *obj)
 			}
 			else
 			{
-				//Spin
+				// Spin
 				speed -= 0x18;
 				scratch->timer -= speed >> 8;
 				scratch->speed = speed;
@@ -407,36 +407,36 @@ static void Obj_Square(Object *obj)
 		}
 	}
 	
-	//Move object and plane
+	// Move object and plane
 	SpeedToPosHud(obj);
 	UpdateScrollPositions(obj);
 	
-	//Clear previous plane art
+	// Clear previous plane art
 	CopyTilemap_Single(0, VRAM_BG, 0x11, 0x11);
 	
-	//Copy new plane art
+	// Copy new plane art
 	const struct MapRamData *data = &map_ram_data[(scratch->timer & 0x18) >> 3];
 	CopyTilemap(data->map, data->offset, data->width + 1, data->height + 1);
 	
 	#if (SCREEN_WIDTH > 320)
-		//Clear unwanted tiles
+		// Clear unwanted tiles
 		int16_t clip_tiles = -(obj->pos.s.x >> 3);
 		if (clip_tiles > 0)
 			CopyTilemap_Single(0, VRAM_BG, clip_tiles, 0x11);
 	#endif
 }
 
-//Sonic neon object
+// Sonic neon object
 typedef struct
 {
-	uint16_t pad; //0x28-0x29
-	uint16_t timer; //0x2A
-	uint16_t speed; //0x2C
+	uint16_t pad; // 0x28-0x29
+	uint16_t timer; // 0x2A
+	uint16_t speed; // 0x2C
 } Scratch_SonicNeon;
 
 static void Obj_SonicNeon(Object *obj)
 {
-	//For some reason this object is written completely differently to the others
+	// For some reason this object is written completely differently to the others
 	
 	Scratch_SonicNeon *scratch = (Scratch_SonicNeon*)&obj->scratch;
 	
@@ -474,16 +474,16 @@ static void Obj_SonicNeon(Object *obj)
 	
 	if (obj->routine == 0)
 	{
-		obj->type = 1; //'Engine doesn't like the ID being null'
+		obj->type = 1; // 'Engine doesn't like the ID being null'
 		
-		//Set object drawing information
+		// Set object drawing information
 		obj->tile = TILE_MAP(0, 3, 0, 0, 0x400);
 		obj->mappings = mappings;
 		
-		//Initialize state
+		// Initialize state
 		obj->pos.s.x = 0;
 		obj->pos.s.y = 0xDE;
-		obj->priority = 0x20; //What the hell?
+		obj->priority = 0x20; // What the hell?
 		
 		obj->width_pixels = 32;
 		obj->y_rad = 32;
@@ -491,29 +491,29 @@ static void Obj_SonicNeon(Object *obj)
 		scratch->timer = 192 - PLANE_WIDEADD;
 		obj->xsp = 0x400;
 		
-		//Increment routine
+		// Increment routine
 		obj->routine += 2;
 	}
 	
-	//Wait for timer to expire
+	// Wait for timer to expire
 	if (scratch->timer != 0)
 	{
 		scratch->timer--;
 		return;
 	}
 	
-	//Check if we should stop
+	// Check if we should stop
 	if (obj->routine <= 2 && obj->pos.s.x >= 0xDE + (PLANE_WIDEADD * 4))
 	{
-		//Stop running and increment routine
+		// Stop running and increment routine
 		obj->pos.s.x = 0xDE + (PLANE_WIDEADD * 4);
 		obj->xsp = 0;
-		//moveq	#$FFFFFFBE,d0				; set to play spinning SFX
-		//jsr	PlaySound_Special			; play SFX //TODO
+		// moveq	#$FFFFFFBE,d0				; set to play spinning SFX
+		// jsr	PlaySound_Special			; play SFX // TODO
 		obj->routine += 2;
 	}
 	
-	//Update mapping frame
+	// Update mapping frame
 	scratch->speed += 0x40;
 	
 	uint8_t frame = scratch->speed >> 8;
@@ -525,7 +525,7 @@ static void Obj_SonicNeon(Object *obj)
 	
 	obj->frame = frame;
 	
-	//Palette cycle
+	// Palette cycle
 	if (!(ssrg_scroll_fg & 0x7))
 	{
 		uint16_t *fromp = &dry_palette[3][4];
@@ -537,33 +537,33 @@ static void Obj_SonicNeon(Object *obj)
 		*top = temp;
 	}
 	
-	//Move and draw
+	// Move and draw
 	SpeedToPosHud(obj);
 	DisplaySprite(obj);
 }
 
-//SSRG splash game mode
+// SSRG splash game mode
 void GM_SSRG()
 {
-	//moveq	#$FFFFFFE4,d0				; set music ID to "stop music"
-	//jsr	PlaySound_Special			; play ID //TODO
+	// moveq	#$FFFFFFE4,d0				; set music ID to "stop music"
+	// jsr	PlaySound_Special			; play ID // TODO
 	
-	//Clear the pattern load queue and fade out
+	// Clear the pattern load queue and fade out
 	ClearPLC();
 	PaletteFadeOut();
 	
-	//Clear screen
+	// Clear screen
 	ClearScreen();
 	
-	//Clear object memory
+	// Clear object memory
 	memset(objects, 0, sizeof(objects));
 	
-	//Initialize VDP and video state
+	// Initialize VDP and video state
 	VDP_SetBackgroundColour(0);
 	vid_scrpos_y_dup = -8;
 	vid_bg_scrpos_y_dup = -44;
 	
-	//Decompress art into VRAM
+	// Decompress art into VRAM
 	VDP_SeekVRAM(0x0020);
 	NemDec(art_main);
 	VDP_SeekVRAM(0x4000);
@@ -573,47 +573,47 @@ void GM_SSRG()
 	VDP_SeekVRAM(0x9000);
 	NemDec(art_link);
 	
-	//Decompress mappings
+	// Decompress mappings
 	KosDec(map_link, buffer0000);
 	CopyTilemap(buffer0000, MAP_PLANE(VRAM_FG, 4, 24) + PLANE_WIDEADD + (PLANE_TALLADD * 2), 32, 1);
 	
 	KosDec(map_main, &buffer0000[0x0000]);
 	KosDec(map_square, &buffer0000[0x4000]);
 	
-	//Copy palette
+	// Copy palette
 	memcpy(&dry_palette_dup[0][0], pal_ssrg, sizeof(pal_ssrg));
 	
-	//Load objects and fade in
-	objects[0].type = 1; //S
-	objects[1].type = 2; //S
-	objects[2].type = 3; //R
-	objects[3].type = 4; //G
+	// Load objects and fade in
+	objects[0].type = 1; // S
+	objects[1].type = 2; // S
+	objects[2].type = 3; // R
+	objects[3].type = 4; // G
 	PaletteFadeIn();
 	memset(&buffer0000[0x7800], 0, 4*3);
 	
-	//Run loop
+	// Run loop
 	do
 	{
-		//Render frame
+		// Render frame
 		vbla_routine = 0x04;
 		WaitForVBla();
 		ssrg_scroll_fg++;
 		
-		//Run objects
+		// Run objects
 		Object *objectp = objects;
-		Obj_Letters(objectp++); //S
-		Obj_Letters(objectp++); //S
-		Obj_Letters(objectp++); //R
-		Obj_Letters(objectp++); //G
-		Obj_Square(objectp++); //Square
-		Obj_SonicNeon(&objects[5]); //Neon Sonic (not sure why it directly addresses here)
+		Obj_Letters(objectp++); // S
+		Obj_Letters(objectp++); // S
+		Obj_Letters(objectp++); // R
+		Obj_Letters(objectp++); // G
+		Obj_Square(objectp++); // Square
+		Obj_SonicNeon(&objects[5]); // Neon Sonic (not sure why it directly addresses here)
 		
-		//Draw screen
+		// Draw screen
 		SRG_ScrollFG();
 		SRG_DrawFG();
 		BuildSprites(NULL);
 	} while (!(jpad1_press1 & JPAD_START) && ssrg_scroll_fg < 0x200);
 	
-	//Go to title gamemode
+	// Go to title gamemode
 	gamemode = GameMode_Title;
 }

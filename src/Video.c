@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-//Video state
+// Video state
 uint8_t vbla_routine;
 
 uint8_t sprite_count;
@@ -16,14 +16,14 @@ int16_t hbla_pos;
 
 int16_t vid_scrpos_y_dup, vid_bg_scrpos_y_dup, vid_scrpos_x_dup, vid_bg_scrpos_x_dup, vid_bg3_scrpos_y_dup, vid_bg3_scrpos_x_dup;
 
-uint16_t sprite_buffer[BUFFER_SPRITES][4]; //Apparently the last 16 entries of this intrude other memory in the original
-                                           //... now how would I emulate that?
+uint16_t sprite_buffer[BUFFER_SPRITES][4]; // Apparently the last 16 entries of this intrude other memory in the original
+                                           // ... now how would I emulate that?
 int16_t hscroll_buffer[SCREEN_HEIGHT][2];
 
-//Video interface
+// Video interface
 void VDPSetupGame()
 {
-	//Initialize VDP state
+	// Initialize VDP state
 	VDP_SetPlaneALocation(VRAM_FG);
 	VDP_SetPlaneBLocation(VRAM_BG);
 	VDP_SetSpriteLocation(VRAM_SPRITES);
@@ -31,13 +31,13 @@ void VDPSetupGame()
 	VDP_SetPlaneSize(PLANE_WIDTH, PLANE_HEIGHT);
 	VDP_SetBackgroundColour(0);
 	
-	//Clear VRAM and CRAM
+	// Clear VRAM and CRAM
 	VDP_SeekVRAM(0);
 	VDP_FillVRAM(0x00, VRAM_SIZE);
 	VDP_SeekCRAM(0);
 	VDP_FillCRAM(0x0000, COLOURS);
 	
-	//Clear internal palette
+	// Clear internal palette
 	memset(dry_palette, 0, sizeof(dry_palette));
 	memset(dry_palette_dup, 0, sizeof(dry_palette_dup));
 	memset(wet_palette, 0, sizeof(wet_palette));
@@ -46,25 +46,25 @@ void VDPSetupGame()
 
 void WaitForVBla()
 {
-	//Render the VDP
+	// Render the VDP
 	VDP_Render();
 }
 
 void ClearScreen()
 {
-	//Clear foreground and background planes
+	// Clear foreground and background planes
 	VDP_SeekVRAM(VRAM_FG);
 	VDP_FillVRAM(0x00, (PLANE_WIDTH * PLANE_HEIGHT) << 1);
 	VDP_SeekVRAM(VRAM_BG);
 	VDP_FillVRAM(0x00, (PLANE_WIDTH * PLANE_HEIGHT) << 1);
 	
-	//Reset screen position duplicates
+	// Reset screen position duplicates
 	vid_scrpos_y_dup = 0;
 	vid_bg_scrpos_y_dup = 0;
 	vid_scrpos_x_dup = 0;
 	vid_bg_scrpos_x_dup = 0;
 	
-	//Clear sprite buffer and hscroll buffer
+	// Clear sprite buffer and hscroll buffer
 	memset(sprite_buffer, 0, sizeof(sprite_buffer));
 	memset(hscroll_buffer, 0, sizeof(hscroll_buffer));
 }

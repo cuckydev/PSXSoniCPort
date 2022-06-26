@@ -2,7 +2,7 @@
 
 #include "Level.h"
 
-//Buzz Bomber assets
+// Buzz Bomber assets
 static const uint8_t map_buzz_bomber[] = {
 	#include "Resource/Mappings/BuzzBomber.h"
 };
@@ -22,20 +22,20 @@ static const uint8_t anim_buzz_missile[] = {
 	#include "Resource/Animation/BuzzMissile.h"
 };
 
-//Buzz Bomber's explosion
+// Buzz Bomber's explosion
 void Obj_BuzzExplode(Object *obj)
 {
 	(void)obj;
 }
 
-//Buzz Bomber's missile
+// Buzz Bomber's missile
 typedef struct
 {
-	uint8_t subtype;    //0x28
-	uint8_t pad0[9];    //0x29 - 0x31
-	int16_t time_delay; //0x32
-	uint8_t pad1[0xC - sizeof(Object*)]; //This will break in 20 years when 128-bit processors are mainstream
-	Object *parent;     //0x3C assuming 32-bit address
+	uint8_t subtype;    // 0x28
+	uint8_t pad0[9];    // 0x29 - 0x31
+	int16_t time_delay; // 0x32
+	uint8_t pad1[0xC - sizeof(Object*)]; // This will break in 20 years when 128-bit processors are mainstream
+	Object *parent;     // 0x3C assuming 32-bit address
 } Scratch_BuzzMissile;
 
 void Obj_BuzzMissile(Object *obj)
@@ -44,15 +44,15 @@ void Obj_BuzzMissile(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Wait for timer to expire
+		case 0: // Initialization
+			// Wait for timer to expire
 			if (--scratch->time_delay >= 0)
 				break;
 			
-			//Increment routine
+			// Increment routine
 			obj->routine += 2;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = map_buzz_missile;
 			obj->tile = TILE_MAP(0, 1, 0, 0, 0x444);
 			obj->render.b = 0;
@@ -66,7 +66,7 @@ void Obj_BuzzMissile(Object *obj)
 			obj->status.o.f.flag6 = false;
 			obj->status.o.f.flag7 = false;
 			
-			//Check if we were created by a Newtron
+			// Check if we were created by a Newtron
 			if (scratch->subtype)
 			{
 				obj->routine = 8;
@@ -76,53 +76,53 @@ void Obj_BuzzMissile(Object *obj)
 				DisplaySprite(obj);
 				break;
 			}
-	//Fallthrough
-		case 2: //Charging
-			//Delete object if parent Buzz Bomber has exploded
+	// Fallthrough
+		case 2: // Charging
+			// Delete object if parent Buzz Bomber has exploded
 			if (scratch->parent->type == ObjId_Explosion)
 				ObjectDelete(obj);
 			
-			//Animate and draw
+			// Animate and draw
 			AnimateSprite(obj, anim_buzz_missile);
 			DisplaySprite(obj);
 			break;
-		case 4: //Fired by Buzz Bomber
-			//Check if we've 'hit Sonic' (disabled)
+		case 4: // Fired by Buzz Bomber
+			// Check if we've 'hit Sonic' (disabled)
 			if (!obj->status.o.f.flag7)
 			{
-				//Use fired collision and animation
+				// Use fired collision and animation
 				obj->col_type = 0x87;
 				obj->anim = 1;
 				
-				//Move and animate
+				// Move and animate
 				SpeedToPos(obj);
 				AnimateSprite(obj, anim_buzz_missile);
 				DisplaySprite(obj);
 				
-				//Delete if fallen below stage
+				// Delete if fallen below stage
 				if ((limit_btm2 + SCREEN_HEIGHT) < obj->pos.l.y.f.u)
 					ObjectDelete(obj);
 			}
 			else
 			{
-				//Explode
+				// Explode
 				obj->type = ObjId_BuzzExplode;
 				obj->routine = 0;
 				Obj_BuzzExplode(obj);
 			}
 			break;
-		case 6: //Delete
+		case 6: // Delete
 			ObjectDelete(obj);
 			break;
-		case 8: //Fired by Newtron
-			//Delete once off-screen
+		case 8: // Fired by Newtron
+			// Delete once off-screen
 			if (!obj->render.f.on_screen)
 			{
 				ObjectDelete(obj);
 				break;
 			}
 			
-			//Move and animate
+			// Move and animate
 			SpeedToPos(obj);
 			AnimateSprite(obj, anim_buzz_missile);
 			DisplaySprite(obj);
@@ -130,12 +130,12 @@ void Obj_BuzzMissile(Object *obj)
 	}
 }
 
-//Buzz Bomber object
+// Buzz Bomber object
 typedef struct
 {
-	uint8_t pad0[10];    //0x28-0x31
-	int16_t time_delay;  //0x32
-	int16_t buzz_status; //0x34
+	uint8_t pad0[10];    // 0x28-0x31
+	int16_t time_delay;  // 0x32
+	int16_t buzz_status; // 0x34
 } Scratch_BuzzBomber;
 
 void Obj_BuzzBomber(Object *obj)
@@ -144,11 +144,11 @@ void Obj_BuzzBomber(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Increment routine
+		case 0: // Initialization
+			// Increment routine
 			obj->routine += 2;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = map_buzz_bomber;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x444);
 			obj->render.b = 0;
@@ -157,21 +157,21 @@ void Obj_BuzzBomber(Object *obj)
 			obj->col_type = 0x08;
 			obj->width_pixels = 24;
 			
-	//Fallthrough
-		case 2: //Moving
+	// Fallthrough
+		case 2: // Moving
 			switch (obj->routine_sec)
 			{
-				case 0: //Moving
-					//Wait for timer to expire
+				case 0: // Moving
+					// Wait for timer to expire
 					if (--scratch->time_delay >= 0)
 						break;
 					
-					//Start firing missile if near Sonic
+					// Start firing missile if near Sonic
 					if (!(scratch->buzz_status & 2))
 					{
-						//Not near Sonic
+						// Not near Sonic
 						obj->routine_sec += 2;
-						scratch->time_delay = 127; //It's a word, Yuji!
+						scratch->time_delay = 127; // It's a word, Yuji!
 						obj->xsp = 0x400;
 						obj->anim = 1;
 						if (!obj->status.o.f.x_flip)
@@ -179,8 +179,8 @@ void Obj_BuzzBomber(Object *obj)
 					}
 					else
 					{
-						//Near Sonic
-						//Create missile object
+						// Near Sonic
+						// Create missile object
 						Object *missile = FindFreeObj();
 						if (missile == NULL)
 							break;
@@ -204,23 +204,23 @@ void Obj_BuzzBomber(Object *obj)
 						mscratch->time_delay = 14;
 						mscratch->parent = obj;
 						
-						//Set our state
+						// Set our state
 						scratch->buzz_status = 1;
 						scratch->time_delay = 59;
 						obj->anim = 2;
 					}
 					break;
-				case 2: //Check near Sonic
-					//Wait for timer to expire
+				case 2: // Check near Sonic
+					// Wait for timer to expire
 					if (--scratch->time_delay >= 0)
 					{
-						//Move and check if we're near Sonic
+						// Move and check if we're near Sonic
 						SpeedToPos(obj);
 						
 						if (scratch->buzz_status)
 							break;
 						
-						//Get X difference and check if we're close enough to Sonic
+						// Get X difference and check if we're close enough to Sonic
 						uint16_t x_off =
 							(obj->pos.l.x.f.u < player->pos.l.x.f.u) ?
 							(player->pos.l.x.f.u - obj->pos.l.x.f.u) : 
@@ -229,30 +229,30 @@ void Obj_BuzzBomber(Object *obj)
 						if (x_off >= 0x60 || !obj->render.f.on_screen)
 							break;
 						
-						//Set that we're near Sonic
+						// Set that we're near Sonic
 						scratch->buzz_status = 2;
 						scratch->time_delay = 29;
 					}
 					else
 					{
-						//Change direction
+						// Change direction
 						scratch->buzz_status = 0;
 						obj->status.o.f.x_flip ^= 1;
 						scratch->time_delay = 59;
 					}
 					
-					//Stop
+					// Stop
 					obj->routine_sec -= 2;
 					obj->xsp = 0;
 					obj->anim = 0;
 					break;
 			}
 			
-			//Animate, draw, and unload when off-screen
+			// Animate, draw, and unload when off-screen
 			AnimateSprite(obj, anim_buzz_bomber);
 			RememberState(obj);
 			break;
-		case 4: //Delete
+		case 4: // Delete
 			ObjectDelete(obj);
 			break;
 	}

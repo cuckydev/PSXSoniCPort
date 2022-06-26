@@ -2,10 +2,10 @@
 
 #include "Backend/VDP.h"
 
-//Video constants
+// Video constants
 #define BUFFER_SPRITES 0x50
 
-//Video globals
+// Video globals
 extern uint8_t vbla_routine;
 
 extern uint8_t sprite_count;
@@ -18,7 +18,7 @@ extern int16_t vid_scrpos_y_dup, vid_bg_scrpos_y_dup, vid_scrpos_x_dup, vid_bg_s
 extern uint16_t sprite_buffer[BUFFER_SPRITES][4];
 extern int16_t hscroll_buffer[SCREEN_HEIGHT][2];
 
-//Video interface
+// Video interface
 void VDPSetupGame();
 void WaitForVBla();
 void ClearScreen();

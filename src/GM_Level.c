@@ -18,43 +18,43 @@
 
 #include <string.h>
 
-//Title card art
+// Title card art
 static const uint8_t art_titlecard[] = {
 	#include "Resource/Art/TitleCard.h"
 	,0,
 };
 
-//Level gamemode
+// Level gamemode
 void GM_Level()
 {
 	GM_Level_Branch:;
-	//Set 'title card' flag
+	// Set 'title card' flag
 	gamemode |= 0x80;
 	
 	if (demo >= 0)
-		{;} //sfx	bgm_Fade,0,1,1 ; fade out music //TODO
+		{;} // sfx	bgm_Fade,0,1,1 ; fade out music // TODO
 	
-	//Clear the pattern load queue and fade out
+	// Clear the pattern load queue and fade out
 	ClearPLC();
 	PaletteFadeOut();
 	
-	//Load art if not in credits
+	// Load art if not in credits
 	if (demo >= 0)
 	{
-		//Load title card art
+		// Load title card art
 		VDP_SeekVRAM(0xB000);
 		NemDec(art_titlecard);
 		
-		//Load level art and general art
+		// Load level art and general art
 		if (level_header[LEVEL_ZONE(level_id)].plc1 != 0)
 			AddPLC(level_header[LEVEL_ZONE(level_id)].plc1);
 		AddPLC(PlcId_Main2);
 	}
 	
-	//Clear object memory
+	// Clear object memory
 	memset(objects, 0, sizeof(objects));
 	
-	//Clear F628 to F680
+	// Clear F628 to F680
 	vbla_routine = 0;
 	pcyc_num = 0;
 	pcyc_time = 0;
@@ -68,7 +68,7 @@ void GM_Level()
 	wtr_state = 0;
 	memset(pcyc_buffer, 0, sizeof(pcyc_buffer));
 	
-	//Clear F700 to F800
+	// Clear F700 to F800
 	scrpos_x.v = 0;
 	scrpos_y.v = 0;
 	bg_scrpos_x.v = 0;
@@ -164,7 +164,7 @@ void GM_Level()
 	scroll_block3_size = 0;
 	scroll_block4_size = 0;
 	
-	//FE60 to FF80
+	// FE60 to FF80
 	memset(oscillatory.state, 0, sizeof(oscillatory.state));
 	memset(sprite_anim, 0, sizeof(sprite_anim));
 	sprite_anim_3buf = 0;
@@ -186,42 +186,42 @@ void GM_Level()
 	bg2_scroll_flags_dup = 0;
 	bg3_scroll_flags_dup = 0;
 	
-	//Clear screen
+	// Clear screen
 	ClearScreen();
 	
-	//Initialize VDP state
+	// Initialize VDP state
 	VDP_SetPlaneALocation(VRAM_FG);
 	VDP_SetPlaneBLocation(VRAM_BG);
 	VDP_SetSpriteLocation(VRAM_SPRITES);
 	VDP_SetPlaneSize(PLANE_WIDTH, PLANE_HEIGHT);
-	VDP_SetBackgroundColour(0x20); //Line 2, entry 0
+	VDP_SetBackgroundColour(0x20); // Line 2, entry 0
 	
-	//Load water
+	// Load water
 	hbla_pos = (SCREEN_HEIGHT - 1);
 	if (LEVEL_ZONE(level_id) == ZoneId_LZ)
 	{
-		//TODO
+		// TODO
 	}
 	air = 30;
 	
-	//Load Sonic's palette
+	// Load Sonic's palette
 	PalLoad2(PalId_Sonic);
 	if (LEVEL_ZONE(level_id) == ZoneId_LZ)
 		PalLoad3_Water((LEVEL_ACT(level_id) == 3) ? PalId_SonicSBZ : PalId_SonicLZ);
 	if (last_lamp)
-		{;}//move.b	($FFFFFE53).w,(f_wtr_state).w //TODO
+		{;}// move.b	($FFFFFE53).w,(f_wtr_state).w // TODO
 	
 	if (demo >= 0)
 	{
-		//Load music
-		//TODO
+		// Load music
+		// TODO
 		
-		//Start title card
+		// Start title card
 		objects[2].type = ObjId_TitleCard;
 		
 		do
 		{
-			//Run game and load PLCs
+			// Run game and load PLCs
 			vbla_routine = 0x0C;
 			WaitForVBla();
 			ExecuteObjects();
@@ -229,26 +229,26 @@ void GM_Level()
 			RunPLC();
 		} while (objects[4].pos.s.x != objects[4].scratch.u16[4] || plc_buffer[0].art != NULL);
 		
-		//Initialize HUD
+		// Initialize HUD
 		HUD_Base();
 	}
 	
-	//Load level
+	// Load level
 	PalLoad1(PalId_Sonic);
 	LevelSizeLoad();
 	DeformLayers();
-	fg_scroll_flags |= SCROLL_FLAG_LEFT; //OK
+	fg_scroll_flags |= SCROLL_FLAG_LEFT; // OK
 	LevelDataLoad();
 	LoadTilesFromStart();
 	FloorLog_Unk();
 	ColIndexLoad();
 	
-	//Create player and HUD objects
+	// Create player and HUD objects
 	player->type = ObjId_Sonic;
 	if (demo >= 0)
 		objects[1].type = ObjId_HUD;
 	
-	//Handle debug mode cheat
+	// Handle debug mode cheat
 	if (debug_cheat && (jpad1_hold1 & JPAD_A))
 		debug_mode = true;
 	jpad1_hold2 = 0;
@@ -256,12 +256,12 @@ void GM_Level()
 	jpad1_hold1 = 0;
 	jpad1_press1 = 0;
 	
-	//Load level objects
+	// Load level objects
 	ObjPosLoad();
 	ExecuteObjects();
 	BuildSprites(NULL);
 	
-	//Initialize game state
+	// Initialize game state
 	if (!last_lamp)
 	{
 		rings = 0;
@@ -277,13 +277,13 @@ void GM_Level()
 	restart = false;
 	frame_count = 0;
 	
-	//OscillateNumInit();
+	// OscillateNumInit();
 	
 	score_count = true;
 	ring_count = true;
 	time_count = true;
 	
-	//Initialize demo
+	// Initialize demo
 	btn_pushtime1 = 0;
 	
 	const uint8_t *demo_data;
@@ -293,58 +293,58 @@ void GM_Level()
 		demo_data = intro_demo_ptr[LEVEL_ZONE(level_id)];
 	btn_pushtime2 = demo_data[1] - 1;
 	if (demo < 0)
-		demo_length = (credits_num == 4) ? 510 : 540; //Credits length
+		demo_length = (credits_num == 4) ? 510 : 540; // Credits length
 	else
-		demo_length = 1800; //Demo length
+		demo_length = 1800; // Demo length
 	
-	//Load level's water palette
+	// Load level's water palette
 	if (LEVEL_ZONE(level_id) == ZoneId_LZ)
 		PalLoad4_Water((LEVEL_ACT(level_id) == 3) ? PalId_LZWater : PalId_SBZ3Water);
 	
-	//Wait for 4 frames
+	// Wait for 4 frames
 	for (int i = 0; i < 4; i++)
 	{
 		vbla_routine = 0x08;
 		WaitForVBla();
 	}
 	
-	//Fade into level
+	// Fade into level
 	PaletteFadeIn_At(0x10, 0x30);
 	
-	//Tell title card to move away
+	// Tell title card to move away
 	objects[2].routine += 2;
 	objects[3].routine += 4;
 	objects[4].routine += 4;
 	objects[5].routine += 4;
 	
-	//Load missing art in credits demos
+	// Load missing art in credits demos
 	if (demo < 0)
 	{
 		AddPLC(PlcId_Explode);
 		AddPLC(PlcId_GHZAnimals + LEVEL_ZONE(level_id));
 	}
 	
-	//Enter level loop
+	// Enter level loop
 	gamemode &= 0x7F;
 	while (1)
 	{
-		//Run frame
+		// Run frame
 		vbla_routine = 0x08;
 		WaitForVBla();
 		frame_count++;
 		
 		MoveSonicInDemo();
-		//LZWaterFeatures();
+		// LZWaterFeatures();
 		
-		//Run game
+		// Run game
 		ExecuteObjects();
 		#ifndef SCP_REV00
-			//Restart level gamemode if restart flag set
+			// Restart level gamemode if restart flag set
 			if (restart)
 				goto GM_Level_Branch;
 		#endif
 		
-		//Setup video and load PLCs
+		// Setup video and load PLCs
 		if (debug_use || player->routine < 6)
 			DeformLayers();
 		BuildSprites(NULL);
@@ -352,53 +352,53 @@ void GM_Level()
 		PaletteCycle();
 		RunPLC();
 		
-		//Other level stuff
+		// Other level stuff
 		SynchroAnimate();
 		SignpostArtLoad();
 		
-		//Check if level loop should end
+		// Check if level loop should end
 		if (gamemode != GameMode_Demo)
 		{
 			#ifdef SCP_REV00
-				//Restart level gamemode if restart flag set
+				// Restart level gamemode if restart flag set
 				if (restart)
 					goto GM_Level_Branch;
 			#endif
 			
-			//Break if exited the level gamemode
+			// Break if exited the level gamemode
 			if (gamemode != GameMode_Level)
 				break;
 		}
 		else
 		{
-			//Begin to fade if restart flag set or demo ended
+			// Begin to fade if restart flag set or demo ended
 			if (restart || !demo_length)
 			{
-				//Get next game mode
-				if (gamemode == GameMode_Demo) //I HATE YOU
+				// Get next game mode
+				if (gamemode == GameMode_Demo) // I HATE YOU
 					gamemode = (demo < 0) ? GameMode_Credits : GameMode_Sega;
 				
-				//Prepare fade
+				// Prepare fade
 				demo_length = 60;
 				palette_fade.ind = 0;
 				palette_fade.len = 0x40;
 				pal_chgspeed = 0;
 				
-				//Fade loop
+				// Fade loop
 				do
 				{
-					//Run frame
+					// Run frame
 					vbla_routine = 0x08;
 					WaitForVBla();
 					
 					MoveSonicInDemo();
 					
-					//Run game
+					// Run game
 					ExecuteObjects();
 					BuildSprites(NULL);
 					ObjPosLoad();
 					
-					//Fade
+					// Fade
 					if (--pal_chgspeed < 0)
 					{
 						pal_chgspeed = 2;
@@ -407,9 +407,9 @@ void GM_Level()
 				} while (demo_length);
 				break;
 			}
-			else if (gamemode != GameMode_Demo) //Condition never met
+			else if (gamemode != GameMode_Demo) // Condition never met
 			{
-				//Go to SEGA game mode
+				// Go to SEGA game mode
 				gamemode = GameMode_Sega;
 				break;
 			}

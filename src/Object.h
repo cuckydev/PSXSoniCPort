@@ -6,12 +6,12 @@
 #include "Types.h"
 #include "Backend/VDP.h"
 
-//Object constants
+// Object constants
 #define RESERVED_OBJECTS 0x20
 #define LEVEL_OBJECTS    0x60
 #define OBJECTS          (RESERVED_OBJECTS + LEVEL_OBJECTS)
 
-//Object IDs
+// Object IDs
 typedef enum
 {
 	/*00*/ ObjId_Null,
@@ -157,7 +157,7 @@ typedef enum
 	/*8C*/ ObjId_8C,
 } ObjectId;
 
-//Object types
+// Object types
 #pragma pack(push)
 #pragma pack(1)
 
@@ -165,14 +165,14 @@ typedef union
 {
 	struct
 	{
-		unsigned int x_flip : 1;       //Horizontally flipped
-		unsigned int y_flip : 1;       //Vertically flipped
-		unsigned int align_fg : 1;     //Aligned to the foreground
-		unsigned int align_bg : 1;     //Aligned to the background (overrides `align_fg`)
-		unsigned int yrad_height : 1;  //Use y_rad as cull height instead of 32
-		unsigned int raw_mappings : 1; //`mappings` member points to a single mapping
-		unsigned int player_loop : 1;  //Set if we're the player object and behind a loop
-		unsigned int on_screen : 1;    //Set if the object's on-screen (see BuildSprites)
+		unsigned int x_flip : 1;       // Horizontally flipped
+		unsigned int y_flip : 1;       // Vertically flipped
+		unsigned int align_fg : 1;     // Aligned to the foreground
+		unsigned int align_bg : 1;     // Aligned to the background (overrides `align_fg`)
+		unsigned int yrad_height : 1;  // Use y_rad as cull height instead of 32
+		unsigned int raw_mappings : 1; // `mappings` member points to a single mapping
+		unsigned int player_loop : 1;  // Set if we're the player object and behind a loop
+		unsigned int on_screen : 1;    // Set if the object's on-screen (see BuildSprites)
 	} f;
 	uint8_t b;
 } ObjectRender;
@@ -181,14 +181,14 @@ typedef union
 {
 	struct
 	{
-		unsigned int x_flip : 1;       //Horizontally flipped
-		unsigned int y_flip : 1;       //Vertially flipped
-		unsigned int flag2 : 1;        //Unused
-		unsigned int player_stand : 1; //Player is standing on us
-		unsigned int flag4 : 1;        //Unused
-		unsigned int player_push : 1;  //Player is pushing us
-		unsigned int flag6 : 1;        //Unused
-		unsigned int flag7 : 1;        //Object-specific
+		unsigned int x_flip : 1;       // Horizontally flipped
+		unsigned int y_flip : 1;       // Vertially flipped
+		unsigned int flag2 : 1;        // Unused
+		unsigned int player_stand : 1; // Player is standing on us
+		unsigned int flag4 : 1;        // Unused
+		unsigned int player_push : 1;  // Player is pushing us
+		unsigned int flag6 : 1;        // Unused
+		unsigned int flag7 : 1;        // Object-specific
 	} f;
 	uint8_t b;
 } ObjectStatus;
@@ -197,14 +197,14 @@ typedef union
 {
 	struct
 	{
-		unsigned int x_flip : 1;       //Horizontally flipped
-		unsigned int in_air : 1;       //In mid-air
-		unsigned int in_ball : 1;      //In ball-form
-		unsigned int object_stand : 1; //Standing on an object
-		unsigned int roll_jump : 1;    //Set when jumping from a roll
-		unsigned int pushing : 1;      //Set if we're pushing
-		unsigned int underwater : 1;   //Set if we're underwater
-		unsigned int flag7 : 1;        //Unused
+		unsigned int x_flip : 1;       // Horizontally flipped
+		unsigned int in_air : 1;       // In mid-air
+		unsigned int in_ball : 1;      // In ball-form
+		unsigned int object_stand : 1; // Standing on an object
+		unsigned int roll_jump : 1;    // Set when jumping from a roll
+		unsigned int pushing : 1;      // Set if we're pushing
+		unsigned int underwater : 1;   // Set if we're underwater
+		unsigned int flag7 : 1;        // Unused
 	} f;
 	uint8_t b;
 } PlayerStatus;
@@ -213,50 +213,50 @@ typedef union
 
 typedef struct
 {
-	uint8_t type;            //Object type
-	ObjectRender render;     //Object render
-	uint16_t tile;           //Object base tile
-	const uint8_t *mappings; //Object mappings
+	uint8_t type;            // Object type
+	ObjectRender render;     // Object render
+	uint16_t tile;           // Object base tile
+	const uint8_t *mappings; // Object mappings
 	union
 	{
 		struct
 		{
 			dword_s x, y;
-		} l; //Level
+		} l; // Level
 		struct
 		{
-			int16_t x; //X position
-			int16_t y; //Y position
-			uint16_t yl; //Y position (lower word for long accesses)
-		} s; //Screen (VDP coordinates)
-	} pos;                //Position
-	int16_t xsp;          //Horizontal speed
-	int16_t ysp;          //Vertical speed
-	int16_t inertia;      //Speed rotated by angle
-	int8_t x_rad, y_rad;  //Object radius
-	uint8_t priority;     //Sprite priority (0-7, 0 drawn in front of 7)
-	uint8_t width_pixels; //Culling and platform width of sprite
-	uint8_t frame;        //Mapping frame
-	uint8_t anim_frame;   //Frame index in animation
-	uint8_t anim;         //Animation
-	uint8_t prev_anim;    //Previous animation
+			int16_t x; // X position
+			int16_t y; // Y position
+			uint16_t yl; // Y position (lower word for long accesses)
+		} s; // Screen (VDP coordinates)
+	} pos;                // Position
+	int16_t xsp;          // Horizontal speed
+	int16_t ysp;          // Vertical speed
+	int16_t inertia;      // Speed rotated by angle
+	int8_t x_rad, y_rad;  // Object radius
+	uint8_t priority;     // Sprite priority (0-7, 0 drawn in front of 7)
+	uint8_t width_pixels; // Culling and platform width of sprite
+	uint8_t frame;        // Mapping frame
+	uint8_t anim_frame;   // Frame index in animation
+	uint8_t anim;         // Animation
+	uint8_t prev_anim;    // Previous animation
 	union
 	{
 		int8_t b;
 		int16_t w;
-	} frame_time;         //Frame duration remaining
-	uint8_t col_type;     //Collision type
-	uint8_t col_property; //Collision property (object-specific)
+	} frame_time;         // Frame duration remaining
+	uint8_t col_type;     // Collision type
+	uint8_t col_property; // Collision property (object-specific)
 	union
 	{
-		ObjectStatus o;   //Object status
-		PlayerStatus p;   //Player status
+		ObjectStatus o;   // Object status
+		PlayerStatus p;   // Player status
 		uint8_t b;
 	} status;
-	uint8_t respawn_index; //Respawn index reference number
-	uint8_t routine;       //Routine
-	uint8_t routine_sec;   //Secondary routine
-	uint8_t angle;         //Angle
+	uint8_t respawn_index; // Respawn index reference number
+	uint8_t routine;       // Routine
+	uint8_t routine_sec;   // Secondary routine
+	uint8_t angle;         // Angle
 	union
 	{
 		uint8_t  u8[0x18];
@@ -265,13 +265,13 @@ typedef struct
 		int16_t  s16[0xC];
 		uint32_t u32[0x6];
 		int32_t  s32[0x6];
-	} scratch;             //Scratch memory
+	} scratch;             // Scratch memory
 } Object;
 
-//Object globals
+// Object globals
 extern int ExecuteObjects_i;
 
-//Object functions
+// Object functions
 Object *FindFreeObj();
 Object *FindNextFreeObj(Object *obj);
 void ExecuteObjects();

@@ -16,25 +16,25 @@
 
 #include <string.h>
 
-//Special stage gamemode
+// Special stage gamemode
 void GM_Special()
 {
-	//Fade out
-	//sfx	sfx_EnterSS,0,1,0 ; play special stage entry sound TODO
+	// Fade out
+	// sfx	sfx_EnterSS,0,1,0 ; play special stage entry sound TODO
 	PaletteWhiteOut();
 	
-	//Reset screen
+	// Reset screen
 	ClearScreen();
 	VDP_SeekVRAM(0x5000);
 	VDP_FillVRAM(0, 0x7000);
 	
-	//Load special assets
+	// Load special assets
 	QuickPLC(PlcId_SpecialStage);
 	
-	//Clear object memory
+	// Clear object memory
 	memset(objects, 0, sizeof(objects));
 	
-	//Clear F700 to F800
+	// Clear F700 to F800
 	scrpos_x.v = 0;
 	scrpos_y.v = 0;
 	bg_scrpos_x.v = 0;
@@ -130,7 +130,7 @@ void GM_Special()
 	scroll_block3_size = 0;
 	scroll_block4_size = 0;
 	
-	//FE60 to FF00
+	// FE60 to FF00
 	memset(oscillatory.state, 0, sizeof(oscillatory.state));
 	memset(sprite_anim, 0, sizeof(sprite_anim));
 	sprite_anim_3buf = 0;
@@ -138,18 +138,18 @@ void GM_Special()
 	limit_top_db = 0;
 	limit_btm_db = 0;
 	
-	//Clear Nemesis buffer
+	// Clear Nemesis buffer
 	memset(nemesis_buffer, 0, sizeof(nemesis_buffer));
 	
-	//Clear other memory
+	// Clear other memory
 	wtr_state = 0;
 	restart = false;
 	
-	//Load special stage palette and layout
+	// Load special stage palette and layout
 	PalLoad1(PalId_Special);
 	SS_Load();
 	
-	//Initialize special stage
+	// Initialize special stage
 	scrpos_x.v = 0;
 	scrpos_y.v = 0;
 	
@@ -158,26 +158,26 @@ void GM_Special()
 	
 	ss_angle.v = 0;
 	ss_rotate = 0x0040;
-	//music	bgm_SS,0,1,0	; play special stage BG	music TODO
+	// music	bgm_SS,0,1,0	; play special stage BG	music TODO
 	
-	//TODO: load demos
+	// TODO: load demos
 	
 	rings = 0;
 	life_num = 0;
 	debug_use = false;
 	demo_length = 1800;
 	
-	//Handle debug mode cheat
+	// Handle debug mode cheat
 	if (debug_cheat && (jpad1_hold1 & JPAD_A))
 		debug_mode = true;
 	
-	//Fade in
+	// Fade in
 	PaletteWhiteIn();
 	
-	//Start special stage loop
+	// Start special stage loop
 	while (1)
 	{
-		//Run frame
+		// Run frame
 		vbla_routine = 0x0A;
 		WaitForVBla();
 		
@@ -185,7 +185,7 @@ void GM_Special()
 		jpad1_hold2  = jpad1_hold1;
 		jpad1_press2 = jpad1_press1;
 		
-		//Run and draw stage
+		// Run and draw stage
 		ExecuteObjects();
 		
 		uint8_t sprite_i;

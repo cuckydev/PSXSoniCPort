@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-//Joypad bitmask
+// Joypad bitmask
 #define JPAD_START (1 << 7)
 #define JPAD_A     (1 << 6)
 #define JPAD_C     (1 << 5)
@@ -12,6 +12,7 @@
 #define JPAD_DOWN  (1 << 1)
 #define JPAD_UP    (1 << 0)
 
-//Joupad interface
+// Joupad interface
+void Joypad_Init();
 uint8_t Joypad_GetState1();
 uint8_t Joypad_GetState2();

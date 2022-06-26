@@ -2,16 +2,16 @@
 
 #include "Object.h"
 
-//Collision angle buffer
+// Collision angle buffer
 extern uint8_t angle_buffer0, angle_buffer1;
 
-//Level collision interface
+// Level collision interface
 void FloorLog_Unk();
 const uint8_t *FindNearestTile(Object *obj, int16_t x, int16_t y);
 int16_t FindFloor(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, int16_t inc, uint8_t *angle);
 int16_t FindWall(Object *obj, int16_t x, int16_t y, uint16_t solid, uint16_t flip, int16_t inc, uint8_t *angle);
 
-//Object collision functions
+// Object collision functions
 int16_t GetDistance2_Down(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle);
 int16_t GetDistance2_Left(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle);
 int16_t GetDistance2_Up(Object *obj, int16_t x, int16_t y, uint8_t *hit_angle);

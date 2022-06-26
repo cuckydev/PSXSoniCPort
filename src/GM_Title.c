@@ -15,18 +15,18 @@
 
 #include <string.h>
 
-//Title screen state
+// Title screen state
 uint8_t demo_num;
 
-//Title screen demo list
+// Title screen demo list
 static const uint16_t title_demos[] = {
 	LEVEL_ID(ZoneId_GHZ, 0),
 	LEVEL_ID(ZoneId_MZ,  0),
 	LEVEL_ID(ZoneId_SYZ, 0),
-	LEVEL_ID(6, 0), //Special stage
+	LEVEL_ID(6, 0), // Special stage
 };
 
-//Japanese credits
+// Japanese credits
 static const uint8_t art_japanese_credits[] = {
 	#include "Resource/Art/JapaneseCredits.h"
 	,0,
@@ -35,13 +35,13 @@ static ALIGNED2 const uint8_t map_japanese_credits[] = {
 	#include "Resource/Tilemap/JapaneseCredits.h"
 };
 
-//Credits font
+// Credits font
 static const uint8_t art_credits_font[] = {
 	#include "Resource/Art/CreditsFont.h"
 	,0,
 };
 
-//Title
+// Title
 static const uint8_t art_title_fg[] = {
 	#include "Resource/Art/TitleFG.h"
 	,0,
@@ -58,24 +58,24 @@ static ALIGNED2 const uint8_t map_title_fg[] = {
 	#include "Resource/Tilemap/TitleFG.h"
 };
 
-//Level select
+// Level select
 /*
 static void LevelSelect()
 {
 	do
 	{
-		//Run frame
+		// Run frame
 		vbla_routine = 0x04;
 		WaitForVBla();
 		
-		//Run level select selection and PLCs
+		// Run level select selection and PLCs
 		
 		RunPLC();
 	} while (plc_buffer[0].art != NULL || !(jpad1_press1 & (JPAD_A | JPAD_B | JPAD_C | JPAD_START)));
 }
 */
 
-//Level stuff
+// Level stuff
 static void PlayLevel()
 {
 	gamemode = (jpad1_hold1 & JPAD_A) ? GameMode_Special : GameMode_Level;
@@ -90,7 +90,7 @@ static void PlayLevel()
 	#ifndef SCP_REV00
 		score_life = 5000;
 	#endif
-	//sfx	bgm_Fade,0,1,1 ; fade out music //TODO
+	// sfx	bgm_Fade,0,1,1 ; fade out music // TODO
 }
 
 static void Tit_ChkLevSel()
@@ -98,43 +98,43 @@ static void Tit_ChkLevSel()
 	PlayLevel();
 	
 	/*
-	//Load level select palette
+	// Load level select palette
 	PalLoad2(PalId_LevelSel);
 	
-	//Clear scroll buffer
+	// Clear scroll buffer
 	memset(hscroll_buffer, 0, sizeof(hscroll_buffer));
 	VDP_SeekVRAM(VRAM_HSCROLL);
 	VDP_FillVRAM(0, sizeof(hscroll_buffer));
 	
-	//Enter level select loop
+	// Enter level select loop
 	LevelSelect();
 	*/
 }
 
-//Title gamemode
+// Title gamemode
 void GM_Title()
 {
-	//Stop music
-	//sfx	bgm_Stop,0,1,1 //TODO
+	// Stop music
+	// sfx	bgm_Stop,0,1,1 // TODO
 	
-	//Clear the pattern load queue and fade out
+	// Clear the pattern load queue and fade out
 	ClearPLC();
 	PaletteFadeOut();
 	
-	//Set VDP state
+	// Set VDP state
 	VDP_SetPlaneALocation(VRAM_FG);
 	VDP_SetPlaneBLocation(VRAM_BG);
-	VDP_SetBackgroundColour(0x20); //Line 2, entry 0
+	VDP_SetBackgroundColour(0x20); // Line 2, entry 0
 	
 	wtr_state = 0;
 	
-	//Clear screen
+	// Clear screen
 	ClearScreen();
 	
-	//Clear object memory
+	// Clear object memory
 	memset(objects, 0, sizeof(objects));
 	
-	//Load Japanese credits
+	// Load Japanese credits
 	VDP_SeekVRAM(0x0000);
 	NemDec(art_japanese_credits);
 	VDP_SeekVRAM(0x14C0);
@@ -142,20 +142,20 @@ void GM_Title()
 	
 	CopyTilemap(map_japanese_credits, VRAM_FG + PLANE_WIDEADD + PLANE_TALLADD, 40, 24);
 	
-	//Clear palette
+	// Clear palette
 	memset(dry_palette_dup, 0, sizeof(dry_palette_dup));
 	PalLoad1(PalId_Sonic);
 	
-	//Load "SONIC TEAM PRESENTS" object
+	// Load "SONIC TEAM PRESENTS" object
 	objects[2].type = ObjId_Credits;
 	
 	ExecuteObjects();
 	BuildSprites(NULL);
 	
-	//Fade in
+	// Fade in
 	PaletteFadeIn();
 	
-	//Load title art
+	// Load title art
 	VDP_SeekVRAM(0x4000);
 	NemDec(art_title_fg);
 	VDP_SeekVRAM(0x6000);
@@ -163,12 +163,12 @@ void GM_Title()
 	VDP_SeekVRAM(0xA200);
 	NemDec(art_title_tm);
 	
-	//Reset game state
+	// Reset game state
 	last_lamp = 0;
 	debug_use = false;
 	demo = 0;
 	
-	//Load GHZ
+	// Load GHZ
 	level_id = LEVEL_ID(ZoneId_GHZ, 0);
 	pcyc_time = 0;
 	
@@ -176,35 +176,35 @@ void GM_Title()
 	DeformLayers();
 	LoadLevelMaps();
 	LoadLevelLayout();
-	player->pos.l.x.f.u += SCREEN_WIDEADD2; //For widescreen so the title starts scrolling at the correct time
+	player->pos.l.x.f.u += SCREEN_WIDEADD2; // For widescreen so the title starts scrolling at the correct time
 	
-	//Fade out
+	// Fade out
 	PaletteFadeOut();
 	
-	//Draw background
+	// Draw background
 	ClearScreen();
 	DrawChunks(bg_scrpos_x.f.u, bg_scrpos_y.f.u, level_layout[0][1], VRAM_BG);
 	
-	//Load title mappings
+	// Load title mappings
 	CopyTilemap(&map_title_fg[0x0000], MAP_PLANE(VRAM_FG, 3, 4) + PLANE_WIDEADD + PLANE_TALLADD, 34, 22);
 	
-	//Load GHZ art and title palette
+	// Load GHZ art and title palette
 	VDP_SeekVRAM(0x0000);
 	NemDec(art_ghz1);
 	PalLoad1(PalId_Title);
 	
-	//Run title screen for 376 frames
+	// Run title screen for 376 frames
 	demo_length = 376;
 	
-	//Clear objects
+	// Clear objects
 	#ifdef SCP_FIX_BUGS
 		memset(&objects[2], 0, sizeof(Object));
 	#else
-		memset(&objects[2], 0, 0x20); //0x20 instead of the object structure size?
-		                              //This why the "PRESS START BUTTON" text is missing.
+		memset(&objects[2], 0, 0x20); // 0x20 instead of the object structure size?
+		                              // This why the "PRESS START BUTTON" text is missing.
 	#endif
 	
-	//Load title objects
+	// Load title objects
 	objects[1].type = ObjId_TitleSonic;
 	objects[2].type = ObjId_PSB;
 	#ifndef SCP_JP
@@ -220,60 +220,60 @@ void GM_Title()
 	
 	NewPLC(PlcId_Main);
 	
-	//Fade in
+	// Fade in
 	PaletteFadeIn();
 	
-	//Loop
+	// Loop
 	do
 	{
-		//Render frame
+		// Render frame
 		vbla_routine = 0x04;
 		WaitForVBla();
 		
-		//Run game and load PLCs
+		// Run game and load PLCs
 		ExecuteObjects();
 		DeformLayers();
 		BuildSprites(NULL);
 		RunPLC();
 		
-		//Run palette cycle
+		// Run palette cycle
 		PCycle_Title();
 		
-		//Move Sonic object (yep, this is how they scroll the camera)
-		//...and return to the Sega screen after a minute?
+		// Move Sonic object (yep, this is how they scroll the camera)
+		// ...and return to the Sega screen after a minute?
 		if ((player->pos.l.x.f.u += 2) >= 0x1C00)
 		{
 			gamemode = GameMode_Sega;
 			return;
 		}
 		
-		//TODO: Check for level select cheat
+		// TODO: Check for level select cheat
 		
-		//Check if the title's over
+		// Check if the title's over
 		if (!demo_length)
 		{
-			//Run the title screen but with reduced code for 30 frames
+			// Run the title screen but with reduced code for 30 frames
 			demo_length = 30;
 			
 			do
 			{
-				//Render frame
+				// Render frame
 				vbla_routine = 0x04;
 				WaitForVBla();
 				
-				//Run game and load PLCs
+				// Run game and load PLCs
 				DeformLayers();
-				PaletteCycle(); //Wrong palette cycle
+				PaletteCycle(); // Wrong palette cycle
 				RunPLC();
 				
-				//Move Sonic object
+				// Move Sonic object
 				if ((player->pos.l.x.f.u += 2) >= 0x1C00)
 				{
 					gamemode = GameMode_Sega;
 					return;
 				}
 				
-				//Check if start is pressed
+				// Check if start is pressed
 				if (jpad1_press1 &= JPAD_START)
 				{
 					Tit_ChkLevSel();
@@ -281,29 +281,29 @@ void GM_Title()
 				}
 			} while (demo_length);
 			
-			//Load demo
-			//sfx	bgm_Fade,0,1,1 ; fade out music //TODO
+			// Load demo
+			// sfx	bgm_Fade,0,1,1 ; fade out music // TODO
 			
 			level_id = title_demos[demo_num & 7];
 			if (++demo_num >= 4)
 				demo_num = 0;
 			
-			//Enter demo gamemode
+			// Enter demo gamemode
 			demo = 1;
 			if (level_id != 0x600)
 			{
-				//Regular level
+				// Regular level
 				gamemode = GameMode_Demo;
 			}
 			else
 			{
-				//Special stage
+				// Special stage
 				gamemode = GameMode_Special;
 				level_id = 0;
 				last_special = 0;
 			}
 			
-			//Set game state
+			// Set game state
 			lives = 3;
 			rings = 0;
 			time.pad = time.min = time.sec = time.frame = 0;

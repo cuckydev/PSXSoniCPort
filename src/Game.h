@@ -4,7 +4,7 @@
 
 #include "Backend/Joypad.h"
 
-//Game types
+// Game types
 typedef enum
 {
 	GameMode_Sega,
@@ -20,7 +20,7 @@ typedef enum
 #endif
 } GameMode;
 
-//Game state
+// Game state
 extern uint8_t buffer0000[0xA400];
 
 extern uint8_t gamemode;
@@ -39,15 +39,15 @@ extern uint8_t jpad1_hold2, jpad1_press2;
 
 extern uint32_t vbla_count;
 
-//Global assets
+// Global assets
 extern const uint8_t art_text[];
 
-//General game functions
+// General game functions
 void ReadJoypads();
 
-//Entry point
+// Entry point
 void EntryPoint();
 
-//Interrupt functions
+// Interrupt functions
 void VBlank();
 void HBlank();

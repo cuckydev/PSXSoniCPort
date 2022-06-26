@@ -1,4 +1,4 @@
-//This file was given by Clownacy
+// This file was given by Clownacy
 
 #include "Kosinski.h"
 

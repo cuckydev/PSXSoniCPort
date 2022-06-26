@@ -3,17 +3,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
-//PLC structure
+// PLC structure
 typedef struct
 {
 	const uint8_t *art;
 	size_t off;
 } PLC;
 
-//PLC buffer
+// PLC buffer
 extern PLC plc_buffer[16];
 
-//PLC IDs
+// PLC IDs
 typedef enum
 {
 	PlcId_Main,
@@ -51,7 +51,7 @@ typedef enum
 	PlcId_Num,
 } PlcId;
 
-//Level art
+// Level art
 extern const uint8_t art_ghz1[];
 extern const uint8_t art_ghz2[];
 extern const uint8_t art_lz[];
@@ -60,7 +60,7 @@ extern const uint8_t art_slz[];
 extern const uint8_t art_syz[];
 extern const uint8_t art_sbz[];
 
-//PLC interface
+// PLC interface
 void AddPLC(PlcId plc);
 void NewPLC(PlcId plc);
 void ClearPLC();

@@ -4,11 +4,11 @@
 #include "Palette.h"
 #include "Level.h"
 
-//Palette cycle state
+// Palette cycle state
 int16_t pcyc_num, pcyc_time;
 uint16_t pcyc_buffer[0x18];
 
-//Palette cycles
+// Palette cycles
 static ALIGNED2 const uint8_t pal_sega1[] = {
 	#include "Resource/Palette/Sega1.h"
 };
@@ -22,7 +22,7 @@ static ALIGNED2 const uint8_t pal_ghzcycle[] = {
 	#include "Resource/Palette/GHZCycle.h"
 };
 
-//Palette cycle routines
+// Palette cycle routines
 signed int PCycle_Sega()
 {
 	uint16_t *to;
@@ -31,11 +31,11 @@ signed int PCycle_Sega()
 	
 	if (!(pcyc_time & 0x00FF))
 	{
-		//Get palette pointers to use
+		// Get palette pointers to use
 		to = &dry_palette[1][0];
 		from = pal_sega1;
 		
-		//Get area of palette to copy, clipping at 0
+		// Get area of palette to copy, clipping at 0
 		pal_len = 6;
 		pal_num = pcyc_num;
 		
@@ -46,7 +46,7 @@ signed int PCycle_Sega()
 			pal_num += 2;
 		}
 		
-		//Write palette
+		// Write palette
 		to += pal_num >> 1;
 		while (pal_len-- > 0)
 		{
@@ -61,7 +61,7 @@ signed int PCycle_Sega()
 				to++;
 		}
 		
-		//Handle cycle timer
+		// Handle cycle timer
 		if (!((pal_num = pcyc_num + 2) & 0x1E))
 			pal_num += 2;
 		
@@ -77,21 +77,21 @@ signed int PCycle_Sega()
 	}
 	else
 	{
-		//Palette timer
+		// Palette timer
 		pcyc_time = (((uint8_t)(pcyc_time >> 8) - 1) << 8) | (pcyc_time & 0x00FF);
 		if (!(pcyc_time & 0x8000))
 			return 1;
 		pcyc_time = 0x0400 | (pcyc_time & 0x00FF);
 		
-		//Get palette index
+		// Get palette index
 		if ((pal_num = (pcyc_num + 0xC)) >= 0x30)
 			return 0;
 		
-		//Get palette to copy
+		// Get palette to copy
 		pcyc_num = pal_num;
 		from = pal_sega2 + pal_num;
 		
-		//Copy border palette
+		// Copy border palette
 		to = &dry_palette[0][2];
 		for (size_t i = 0; i < 5; i++)
 		{
@@ -99,7 +99,7 @@ signed int PCycle_Sega()
 			from += 2;
 		}
 		
-		//Copy filled palette
+		// Copy filled palette
 		to = &dry_palette[1][0];
 		for (size_t i = 0; i < (0x30 - 3); i++)
 		{
@@ -114,15 +114,15 @@ signed int PCycle_Sega()
 
 static void PCycle_Water(const uint8_t *palette)
 {
-	//Wait for cycle timer
+	// Wait for cycle timer
 	if (--pcyc_time >= 0)
 		return;
 	
-	//Increment cycle
+	// Increment cycle
 	pcyc_time = 5;
 	pcyc_num++;
 	
-	//Write palette
+	// Write palette
 	uint16_t pal_num = pcyc_num & 3;
 	const uint8_t *from = palette + (pal_num << 3);
 	uint16_t *to = &dry_palette[2][8];
@@ -143,7 +143,7 @@ void PCycle_SS()
 	
 }
 
-//Palette cycle function
+// Palette cycle function
 void PaletteCycle()
 {
 	switch (LEVEL_ZONE(level_id))

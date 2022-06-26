@@ -3,7 +3,7 @@
 #include "Level.h"
 #include "LevelCollision.h"
 
-//Newtron assets
+// Newtron assets
 static const uint8_t map_newtron[] = {
 	#include "Resource/Mappings/Newtron.h"
 };
@@ -11,12 +11,12 @@ static const uint8_t anim_newtron[] = {
 	#include "Resource/Animation/Newtron.h"
 };
 
-//Newtron object
+// Newtron object
 typedef struct
 {
-	uint8_t subtype;  //0x28
-	uint8_t pad[0x9]; //0x29-0x31
-	uint8_t fired;    //0x32
+	uint8_t subtype;  // 0x28
+	uint8_t pad[0x9]; // 0x29-0x31
+	uint8_t fired;    // 0x32
 } Scratch_Newtron;
 
 void Obj_Newtron(Object *obj)
@@ -27,11 +27,11 @@ void Obj_Newtron(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
-			//Increment routine
+		case 0: // Initialization
+			// Increment routine
 			obj->routine += 2;
 			
-			//Set object drawing information
+			// Set object drawing information
 			obj->mappings = map_newtron;
 			obj->tile = TILE_MAP(0, 0, 0, 0, 0x49B);
 			obj->render.b = 0;
@@ -40,13 +40,13 @@ void Obj_Newtron(Object *obj)
 			obj->width_pixels = 20;
 			obj->y_rad = 16;
 			obj->x_rad = 8;
-	//Fallthrough
+	// Fallthrough
 		case 2:
 			switch (obj->routine_sec)
 			{
-				case 0: //Check if near Sonic
+				case 0: // Check if near Sonic
 				{
-					//Get X difference and check if we're close enough to Sonic
+					// Get X difference and check if we're close enough to Sonic
 					uint16_t x_off;
 					if (obj->pos.l.x.f.u < player->pos.l.x.f.u)
 					{
@@ -61,7 +61,7 @@ void Obj_Newtron(Object *obj)
 					if (x_off >= 0x80)
 						break;
 					
-					//Setup next state depending on if we're green or blue
+					// Setup next state depending on if we're green or blue
 					obj->routine_sec += 2;
 					obj->anim = 1;
 					
@@ -73,9 +73,9 @@ void Obj_Newtron(Object *obj)
 					}
 					break;
 				}
-				case 2: //Flying Newtron
+				case 2: // Flying Newtron
 				{
-					//Wait until animation has finished
+					// Wait until animation has finished
 					if (obj->frame < 4)
 					{
 						if (obj->pos.l.x.f.u < player->pos.l.x.f.u)
@@ -85,22 +85,22 @@ void Obj_Newtron(Object *obj)
 						break;
 					}
 					
-					//Change collision type once frame is 1?
+					// Change collision type once frame is 1?
 					if (obj->frame == 1)
-						obj->col_type = 0x0C; //Different collision type than below
+						obj->col_type = 0x0C; // Different collision type than below
 					
-					//Fall onto ground
+					// Fall onto ground
 					ObjectFall(obj);
 					
 					floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u);
 					if (floor_dist < 0)
 					{
-						//Clip and change state
+						// Clip and change state
 						obj->pos.l.y.f.u += floor_dist;
 						obj->ysp = 0;
 						obj->routine_sec += 2;
 						obj->anim = 2;
-						if (obj->tile & TILE_MAP(0, 1, 0, 0, 0)) //Condition never met
+						if (obj->tile & TILE_MAP(0, 1, 0, 0, 0)) // Condition never met
 							obj->anim++;
 						obj->col_type = 0x0D;
 						obj->xsp = 0x200;
@@ -109,8 +109,8 @@ void Obj_Newtron(Object *obj)
 					}
 					break;
 				}
-				case 4: //Fly along floor
-					//Move and check floor
+				case 4: // Fly along floor
+					// Move and check floor
 					SpeedToPos(obj);
 					
 					floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u);
@@ -120,21 +120,21 @@ void Obj_Newtron(Object *obj)
 						break;
 					}
 					
-					//Didn't find floor, start flying without collision
+					// Didn't find floor, start flying without collision
 					obj->routine_sec += 2;
 					break;
-				case 6: //Fly in mid-air
+				case 6: // Fly in mid-air
 					SpeedToPos(obj);
 					break;
-				case 8: //Shooting Newtron
-					//Change collision type once frame is 1
+				case 8: // Shooting Newtron
+					// Change collision type once frame is 1
 					if (obj->frame == 1)
 						obj->col_type = 0x0C;
 					
-					//Check if we should fire
+					// Check if we should fire
 					if (obj->frame == 2 && !scratch->fired)
 					{
-						//Fire missile
+						// Fire missile
 						scratch->fired = true;
 						
 						Object *msl = FindFreeObj();
@@ -155,16 +155,16 @@ void Obj_Newtron(Object *obj)
 							msl->pos.l.x.f.u -= 20;
 						}
 						msl->status.o.b = obj->status.o.b;
-						msl->scratch.u8[0] = 1; //subtype
+						msl->scratch.u8[0] = 1; // subtype
 					}
 					break;
 			}
 			
-			//Animate, draw, and unload once off-screen
+			// Animate, draw, and unload once off-screen
 			AnimateSprite(obj, anim_newtron);
 			RememberState(obj);
 			break;
-		case 4: //Delete
+		case 4: // Delete
 			ObjectDelete(obj);
 			break;
 	}

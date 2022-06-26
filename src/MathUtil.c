@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-//Trigonometry tables
+// Trigonometry tables
 static const int16_t sine_table[] =
 {
 	  0x00,   0x06,   0x0C,   0x12,   0x19,   0x1F,   0x25,   0x2B,
@@ -84,7 +84,7 @@ static const uint8_t atan_table[] =
 	0x20, 0x00
 };
 
-//Trigonometry
+// Trigonometry
 void CalcSine(uint8_t angle, int16_t *sin, int16_t *cos)
 {
 	if (sin != NULL)
@@ -105,22 +105,22 @@ int16_t GetCos(uint8_t angle)
 
 uint16_t CalcAngle(int16_t x, int16_t y)
 {
-	//If x and y is 0, return 90 degrees
+	// If x and y is 0, return 90 degrees
 	if ((x | y) == 0)
 		return 0x40;
 	
-	//Get absolute X and Y
+	// Get absolute X and Y
 	int16_t abs_x = (x < 0) ? -x : x;
 	int16_t abs_y = (y < 0) ? -y : y;
 	
-	//Get our absolute angle
+	// Get our absolute angle
 	uint8_t angle;
 	if (abs_x > abs_y)
 		angle = atan_table[(abs_y << 8) / abs_x];
 	else
 		angle = 0x40 - atan_table[(abs_x << 8) / abs_y];
 	
-	//Invertion if negative
+	// Invertion if negative
 	if (x < 0)
 		angle = -angle + 0x80;
 	if (y < 0)
@@ -128,16 +128,16 @@ uint16_t CalcAngle(int16_t x, int16_t y)
 	return angle;
 }
 
-//Random number generation
+// Random number generation
 dword_u random_seed;
 
 uint32_t RandomNumber()
 {
-	//Re-seed if 0
+	// Re-seed if 0
 	if (random_seed.v == 0)
 		random_seed.v = 0x2A6D365A;
 	
-	//Scramble our current seed
+	// Scramble our current seed
 	dword_u result = {.v = random_seed.v};
 	random_seed.v <<= 2;
 	random_seed.v += result.v;
@@ -145,7 +145,7 @@ uint32_t RandomNumber()
 	random_seed.v += result.v;
 	result.f.l = random_seed.f.l;
 	
-	//switch to random_seed.f.u because of a swap
+	// switch to random_seed.f.u because of a swap
 	result.f.l += random_seed.f.u;
 	random_seed.f.u = result.f.l;
 	

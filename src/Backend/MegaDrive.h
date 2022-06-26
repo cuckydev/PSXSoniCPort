@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-//General types
+// General types
 typedef void(*MD_Vector)();
 
 enum MD_Region
@@ -13,17 +13,17 @@ enum MD_Region
 	Region_E,
 };
 
-//Program header
+// Program header
 typedef struct
 {
-	//Vectors
-	MD_Vector entry_point; //Start of program
-	MD_Vector h_interrupt; //Horizontal interrupt
-	MD_Vector v_interrupt; //Vertical interrupt
+	// Vectors
+	MD_Vector entry_point; // Start of program
+	MD_Vector h_interrupt; // Horizontal interrupt
+	MD_Vector v_interrupt; // Vertical interrupt
 	
-	//Game information
-	const char *title;     //Game title
+	// Game information
+	const char *title;     // Game title
 } MD_Header;
 
-//MegaDrive interface
+// MegaDrive interface
 void MegaDrive_Start(const MD_Header *header);

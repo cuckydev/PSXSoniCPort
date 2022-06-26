@@ -2,13 +2,13 @@
 
 #include <stdint.h>
 
-//Demo state
+// Demo state
 extern uint16_t btn_pushtime1;
 extern uint8_t btn_pushtime2;
 
-//Demos
+// Demos
 extern const uint8_t *intro_demo_ptr[];
 extern const uint8_t *ending_demo_ptr[];
 
-//Demo playback
+// Demo playback
 void MoveSonicInDemo();

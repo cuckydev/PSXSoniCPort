@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-//Palette state
+// Palette state
 int16_t pal_chgspeed;
 
 uint16_t dry_palette[4][16];
@@ -17,7 +17,7 @@ uint16_t wet_palette_dup[4][16];
 
 PaletteFade palette_fade;
 
-//Palettes
+// Palettes
 static ALIGNED2 const uint8_t pal_sega_bg[] = {
 	#include "Resource/Palette/SegaBG.h"
 };
@@ -107,10 +107,10 @@ static struct PalettePointer
 	/* PalId_Ending    */ {(const uint16_t*)pal_ending,     &dry_palette[0][0], 0x40},
 };
 
-//Palette interface
+// Palette interface
 void PalLoad1(PaletteId id)
 {
-	//Load given palette
+	// Load given palette
 	struct PalettePointer *palload = &palette_pointers[id];
 	const uint16_t *inp = palload->palette;
 	uint16_t *outp = &dry_palette_dup[0][0] + (palload->target - &dry_palette[0][0]);
@@ -121,7 +121,7 @@ void PalLoad1(PaletteId id)
 
 void PalLoad2(PaletteId id)
 {
-	//Load given palette
+	// Load given palette
 	struct PalettePointer *palload = &palette_pointers[id];
 	const uint16_t *inp = palload->palette;
 	uint16_t *outp = palload->target;
@@ -132,7 +132,7 @@ void PalLoad2(PaletteId id)
 
 void PalLoad3_Water(PaletteId id)
 {
-	//Load given palette
+	// Load given palette
 	struct PalettePointer *palload = &palette_pointers[id];
 	const uint16_t *inp = palload->palette;
 	uint16_t *outp = &wet_palette[0][0] + (palload->target - &dry_palette[0][0]);
@@ -143,7 +143,7 @@ void PalLoad3_Water(PaletteId id)
 
 void PalLoad4_Water(PaletteId id)
 {
-	//Load given palette
+	// Load given palette
 	struct PalettePointer *palload = &palette_pointers[id];
 	const uint16_t *inp = palload->palette;
 	uint16_t *outp = &wet_palette_dup[0][0] + (palload->target - &dry_palette[0][0]);
@@ -152,7 +152,7 @@ void PalLoad4_Water(PaletteId id)
 		*outp++ = LESWAP_16(*inp);
 }
 
-//Fade in from black
+// Fade in from black
 static void FadeIn_AddColour(uint16_t *col, uint16_t ref)
 {
 	uint16_t v = *col;
@@ -171,13 +171,13 @@ void FadeIn_FromBlack()
 {
 	uint16_t *col, *ref;
 	
-	//Fade dry palette
+	// Fade dry palette
 	col = (&dry_palette[0][0]) + palette_fade.ind;
 	ref = (&dry_palette_dup[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		FadeIn_AddColour(col++, *ref++);
 	
-	//Fade wet palette
+	// Fade wet palette
 	col = (&wet_palette[0][0]) + palette_fade.ind;
 	ref = (&wet_palette_dup[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
@@ -191,16 +191,16 @@ void PaletteFadeIn()
 
 void PaletteFadeIn_At(uint8_t ind, uint8_t len)
 {
-	//Initialize fade
+	// Initialize fade
 	palette_fade.ind = ind;
 	palette_fade.len = len;
 	
-	//Fill palette with black
+	// Fill palette with black
 	uint16_t *col = (&dry_palette[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		*col++ = 0x000;
 	
-	//Fade for 22 frames
+	// Fade for 22 frames
 	for (int i = 0; i < 22; i++)
 	{
 		vbla_routine = 0x12;
@@ -210,7 +210,7 @@ void PaletteFadeIn_At(uint8_t ind, uint8_t len)
 	}
 }
 
-//Fade out to black
+// Fade out to black
 static void FadeOut_DecColour(uint16_t *col)
 {
 	uint16_t v = *col;
@@ -229,12 +229,12 @@ void FadeOut_ToBlack()
 {
 	uint16_t *col;
 	
-	//Fade dry palette
+	// Fade dry palette
 	col = (&dry_palette[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		FadeOut_DecColour(col++);
 	
-	//Fade wet palette
+	// Fade wet palette
 	col = (&wet_palette[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		FadeOut_DecColour(col++);
@@ -247,11 +247,11 @@ void PaletteFadeOut()
 
 void PaletteFadeOut_At(uint8_t ind, uint8_t len)
 {
-	//Initialize fade
+	// Initialize fade
 	palette_fade.ind = ind;
 	palette_fade.len = len;
 	
-	//Fade for 22 frames
+	// Fade for 22 frames
 	for (int i = 0; i < 22; i++)
 	{
 		vbla_routine = 0x12;
@@ -261,7 +261,7 @@ void PaletteFadeOut_At(uint8_t ind, uint8_t len)
 	}
 }
 
-//White in from white
+// White in from white
 static void WhiteIn_DecColour(uint16_t *col, uint16_t ref)
 {
 	uint16_t v = *col;
@@ -280,13 +280,13 @@ void WhiteIn_FromWhite()
 {
 	uint16_t *col, *ref;
 	
-	//White dry palette
+	// White dry palette
 	col = (&dry_palette[0][0]) + palette_fade.ind;
 	ref = (&dry_palette_dup[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		WhiteIn_DecColour(col++, *ref++);
 	
-	//White wet palette
+	// White wet palette
 	col = (&wet_palette[0][0]) + palette_fade.ind;
 	ref = (&wet_palette_dup[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
@@ -300,11 +300,11 @@ void PaletteWhiteIn()
 
 void PaletteWhiteIn_At(uint8_t ind, uint8_t len)
 {
-	//Initialize fade
+	// Initialize fade
 	palette_fade.ind = ind;
 	palette_fade.len = len;
 	
-	//White for 22 frames
+	// White for 22 frames
 	for (int i = 0; i < 22; i++)
 	{
 		vbla_routine = 0x12;
@@ -314,7 +314,7 @@ void PaletteWhiteIn_At(uint8_t ind, uint8_t len)
 	}
 }
 
-//White out to white
+// White out to white
 static void WhiteOut_IncColour(uint16_t *col)
 {
 	uint16_t v = *col;
@@ -333,12 +333,12 @@ void WhiteOut_ToWhite()
 {
 	uint16_t *col;
 	
-	//White dry palette
+	// White dry palette
 	col = (&dry_palette[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		WhiteOut_IncColour(col++);
 	
-	//White wet palette
+	// White wet palette
 	col = (&wet_palette[0][0]) + palette_fade.ind;
 	for (int i = 0; i < palette_fade.len; i++)
 		WhiteOut_IncColour(col++);
@@ -351,11 +351,11 @@ void PaletteWhiteOut()
 
 void PaletteWhiteOut_At(uint8_t ind, uint8_t len)
 {
-	//Initialize fade
+	// Initialize fade
 	palette_fade.ind = ind;
 	palette_fade.len = len;
 	
-	//White for 22 frames
+	// White for 22 frames
 	for (int i = 0; i < 22; i++)
 	{
 		vbla_routine = 0x12;

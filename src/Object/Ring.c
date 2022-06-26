@@ -6,7 +6,7 @@
 #include "Game.h"
 #include "MathUtil.h"
 
-//Ring assets
+// Ring assets
 static const uint8_t anim_ring[] = {
 	#include "Resource/Animation/Ring.h"
 };
@@ -14,13 +14,13 @@ const uint8_t map_ring[] = {
 	#include RES_REV(Mappings/Ring)
 };
 
-//Ring object
+// Ring object
 typedef struct
 {
-	uint8_t subtype;  //0x28
-	uint8_t pad[0x9]; //0x29-0x31
-	int16_t base_x;   //0x32
-	uint8_t index;    //0x34
+	uint8_t subtype;  // 0x28
+	uint8_t pad[0x9]; // 0x29-0x31
+	int16_t base_x;   // 0x32
+	uint8_t index;    // 0x34
 } Scratch_Ring;
 
 static const int8_t ring_pos[16][2] = {
@@ -57,23 +57,23 @@ static void Obj_Ring_SetupRing(Object *obj, uint8_t index, int16_t x, int16_t y,
 {
 	Scratch_Ring *scratch = (Scratch_Ring*)&ring->scratch;
 	
-	//Set type and routine
+	// Set type and routine
 	ring->type = ObjId_Ring;
 	ring->routine += 2;
 	
-	//Set position
+	// Set position
 	ring->pos.l.x.f.u = x;
 	scratch->base_x = obj->pos.l.x.f.u;
 	ring->pos.l.y.f.u = y;
 	
-	//Set object drawing information
+	// Set object drawing information
 	ring->mappings = map_ring;
 	ring->tile = TILE_MAP(0, 1, 0, 0, 0x7B2);
 	ring->render.b = 0;
 	ring->render.f.align_fg = true;
 	ring->priority = 2;
 	
-	//Set other state stuff
+	// Set other state stuff
 	ring->col_type = 0x47;
 	ring->width_pixels = 8;
 	ring->respawn_index = obj->respawn_index;
@@ -88,12 +88,12 @@ static void ExtraLife()
 
 static void CollectRing()
 {
-	//Increment ring count
+	// Increment ring count
 	rings++;
 	ring_count |= 1;
 	
-	//Check if we should get an extra life
-	//TODO: sound
+	// Check if we should get an extra life
+	// TODO: sound
 	if (rings >= 100 && !(life_num & 1))
 	{
 		life_num |= 1;
@@ -112,13 +112,13 @@ void Obj_Ring(Object *obj)
 	
 	switch (obj->routine)
 	{
-		case 0: //Initialization
+		case 0: // Initialization
 		{
-			//Get spawning information
+			// Get spawning information
 			uint8_t *statep = &objstate[obj->respawn_index];
 			uint8_t state = *statep;
 			
-			uint8_t num = scratch->subtype & 7; //subtype
+			uint8_t num = scratch->subtype & 7; // subtype
 			if (num == 7)
 				num = 6;
 			
@@ -128,7 +128,7 @@ void Obj_Ring(Object *obj)
 			int16_t x = obj->pos.l.x.f.u;
 			int16_t y = obj->pos.l.y.f.u;
 			
-			//Spawn rings
+			// Spawn rings
 			uint16_t index = 0;
 			
 			if (!Obj_Ring_ShiftChk(&state))
@@ -157,61 +157,61 @@ void Obj_Ring(Object *obj)
 				return;
 			}
 		}
-	//Fallthrough
-		case 2: //Animate
-			//Draw and unload once off-screen
+	// Fallthrough
+		case 2: // Animate
+			// Draw and unload once off-screen
 			obj->frame = sprite_anim[1].frame;
 			DisplaySprite(obj);
 			if (IS_OFFSCREEN(scratch->base_x))
 				ObjectDelete(obj);
 			break;
-		case 4: //Collected
-			//Change object state
+		case 4: // Collected
+			// Change object state
 			obj->routine += 2;
 			obj->col_type = 0x00;
 			obj->priority = 1;
 			
-			//Collect ring and mark as collected
+			// Collect ring and mark as collected
 			CollectRing();
 			objstate[obj->respawn_index] |= (1 << scratch->index);
-	//Fallthrough
-		case 6: //Sparkling
-			//Animate and draw
+	// Fallthrough
+		case 6: // Sparkling
+			// Animate and draw
 			AnimateSprite(obj, anim_ring);
 			DisplaySprite(obj);
 			break;
-		case 8: //Delete
+		case 8: // Delete
 			ObjectDelete(obj);
 			break;
 	}
 }
 
-//Ring loss object
+// Ring loss object
 static void Obj_RingLoss_SetupRing(Object *obj, int16_t *xsp, int16_t *ysp, word_u *angle, Object *ring)
 {
-	//Set object type and routine
+	// Set object type and routine
 	ring->type = ObjId_RingLoss;
 	ring->routine += 2;
 	
-	//Set collision and position
+	// Set collision and position
 	ring->y_rad = 8;
 	ring->x_rad = 8;
 	ring->pos.l.x.f.u = obj->pos.l.x.f.u;
 	ring->pos.l.y.f.u = obj->pos.l.y.f.u;
 	
-	//Set object drawing information
+	// Set object drawing information
 	ring->mappings = map_ring;
 	ring->tile = TILE_MAP(0, 1, 0, 0, 0x7B2);
 	ring->render.b = 0;
 	ring->render.f.align_fg = true;
 	ring->priority = 3;
 	
-	//Set other object state stuff
+	// Set other object state stuff
 	ring->col_type = 0x47;
 	ring->width_pixels = 8;
 	sprite_anim[3].time = -1;
 	
-	//Handle object angle and velocity
+	// Handle object angle and velocity
 	if (!(angle->f.u & 0x80))
 	{
 		int16_t sin, cos;
@@ -237,15 +237,15 @@ void Obj_RingLoss(Object *obj)
 {
 	switch (obj->routine)
 	{
-		case 0: //Initialization
+		case 0: // Initialization
 		{
-			//Get how many rings to drop
+			// Get how many rings to drop
 			uint16_t drop = rings;
 			if (drop >= 32)
-				drop = 32; //Cap at 32
-			drop--; //dbf
+				drop = 32; // Cap at 32
+			drop--; // dbf
 			
-			//Drop rings
+			// Drop rings
 			int16_t xsp, ysp;
 			word_u angle;
 			angle.v = 0x0288;
@@ -259,34 +259,34 @@ void Obj_RingLoss(Object *obj)
 				Obj_RingLoss_SetupRing(obj, &xsp, &ysp, &angle, ring);
 			}
 			
-			//Lose rings
+			// Lose rings
 			rings = 0;
 			ring_count = 0x80;
 			life_num = 0;
-			//sfx	sfx_RingLoss,0,0,0	; play ring loss sound //TODO
+			// sfx	sfx_RingLoss,0,0,0	; play ring loss sound // TODO
 		}
-	//Fallthrough
-		case 2: //Moving
-			//Use animation frame
+	// Fallthrough
+		case 2: // Moving
+			// Use animation frame
 			obj->frame = sprite_anim[3].frame;
 			
-			//Fall
+			// Fall
 			SpeedToPos(obj);
 			obj->ysp += 0x18;
 			
-			//Do floor collision (every 4 frames)
+			// Do floor collision (every 4 frames)
 			if (obj->ysp >= 0 && ((ExecuteObjects_i + (vbla_count & 0xFF)) & 3) == 0)
 			{
 				int16_t floor_dist = ObjFloorDist(obj, obj->pos.l.x.f.u);
 				if (floor_dist < 0)
 				{
-					//Bounce off floor
+					// Bounce off floor
 					obj->pos.l.y.f.u += floor_dist;
 					obj->ysp = -(obj->ysp - (obj->ysp >> 2));
 				}
 			}
 			
-			//Delete once below level or animation is done
+			// Delete once below level or animation is done
 			if (!sprite_anim[3].time)
 			{
 				ObjectDelete(obj);
@@ -298,24 +298,24 @@ void Obj_RingLoss(Object *obj)
 				break;
 			}
 			
-			//Draw
+			// Draw
 			DisplaySprite(obj);
 			break;
-		case 4: //Collected
-			//Change object state
+		case 4: // Collected
+			// Change object state
 			obj->routine += 2;
 			obj->col_type = 0x00;
 			obj->priority = 1;
 			
-			//Collect ring
+			// Collect ring
 			CollectRing();
-	//Fallthrough
-		case 6: //Sparkling
-			//Animate and draw
+	// Fallthrough
+		case 6: // Sparkling
+			// Animate and draw
 			AnimateSprite(obj, anim_ring);
 			DisplaySprite(obj);
 			break;
-		case 8: //Delete
+		case 8: // Delete
 			ObjectDelete(obj);
 			break;
 	}
