@@ -18,7 +18,7 @@ static size_t vdp_vram_i;
 
 static uint8_t vdp_dirty[VRAM_SIZE / (512 * 4)];
 
-static uint16_t vdp_cram[4][16];
+static uint16_t vdp_cram[16 * 4];
 static uint16_t *vdp_cram_p;
 
 static size_t vdp_plane_a_location, vdp_plane_b_location, vdp_sprite_location, vdp_hscroll_location;
@@ -32,10 +32,18 @@ static int16_t vdp_hint_pos;
 static MD_Vector vdp_hint, vdp_vint;
 
 // GPU state
+#define GFX_OTLEN 1
+
 static struct GpuState
 {
+	// Environments
 	DISPENV disp;
 	DRAWENV draw;
+	
+	// Buffers
+	u_long ot[1 + GFX_OTLEN]; // Ordering table
+	uint8_t pri[0x8000]; // Primitive buffer
+	uint8_t *prip;
 } gpu_state[2];
 struct GpuState *gpu_statep;
 
@@ -46,20 +54,23 @@ int VDP_Init(const MD_Header *header)
 	ResetGraph(0);
 	
 	// Define display environments, first on top and second on bottom
-	SetDefDispEnv(&gpu_state[0].disp, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	SetDefDispEnv(&gpu_state[1].disp, 0, 256, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SetDefDispEnv(&gpu_state[0].disp, 0, 0, SCREEN_WIDTH, 240);
+	SetDefDispEnv(&gpu_state[1].disp, 0, 256, SCREEN_WIDTH, 240);
+	
+	gpu_state[0].disp.screen.y = 8;
+	gpu_state[0].disp.screen.w = 320;
+	gpu_state[0].disp.screen.h = 224;
+	
+	gpu_state[1].disp.screen.y = 8;
+	gpu_state[1].disp.screen.w = 320;
+	gpu_state[1].disp.screen.h = 224;
 	
 	// Define drawing environments, first on bottom and second on top
-	SetDefDrawEnv(&gpu_state[0].draw, 0, 256, SCREEN_WIDTH, SCREEN_HEIGHT);
-	SetDefDrawEnv(&gpu_state[1].draw, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SetDefDrawEnv(&gpu_state[0].draw, 0, 256, SCREEN_WIDTH, 240);
+	SetDefDrawEnv(&gpu_state[1].draw, 0, 0, SCREEN_WIDTH, 240);
 	
 	// Select GPU state
 	gpu_statep = &gpu_state[0];
-	PutDispEnv(&gpu_statep->disp);
-	PutDrawEnv(&gpu_statep->draw);
-	
-	// Enable display output
-	SetDispMask(1);
 	
 	// Initialize VDP state
 	vdp_plane_a_location = 0;
@@ -106,7 +117,7 @@ void VDP_FillVRAM(uint8_t data, size_t len)
 
 void VDP_SeekCRAM(size_t offset)
 {
-	vdp_cram_p = &vdp_cram[0][0] + offset;
+	vdp_cram_p = vdp_cram + offset;
 }
 
 void VDP_WriteCRAM(const uint16_t *data, size_t len)
@@ -170,6 +181,51 @@ void VDP_SetHIntPosition(int16_t pos)
 // VDP rendering
 void VDP_Render()
 {
+	// Flip GPU state
+	gpu_statep = (gpu_statep == &gpu_state[0]) ? &gpu_state[1] : &gpu_state[0];
+	
+	gpu_statep->prip = gpu_statep->pri;
+	ClearOTagR(gpu_statep->ot, 1 + GFX_OTLEN);
+	
+	// Update CRAM
+	uint16_t cram_fmt[4 * 16];
+	for (size_t i = 0; i < 4 * 16; i++)
+	{
+		if (i & 0x0F)
+		{
+			// Get colour values
+			uint16_t cv = vdp_cram[i];
+			uint8_t r = (cv & 0x00E) >> 1;
+			uint8_t g = (cv & 0x0E0) >> 5;
+			uint8_t b = (cv & 0xE00) >> 9;
+
+			// Get formatted colour
+			static const uint16_t col_level[] = {
+				0 * 31 / 255,
+				52 * 31 / 255,
+				87 * 31 / 255,
+				116 * 31 / 255,
+				144 * 31 / 255,
+				172 * 31 / 255,
+				206 * 31 / 255,
+				255 * 31 / 255
+			};
+			cram_fmt[i] = 0x8000 | (col_level[b] << 10) | (col_level[g] << 5) | col_level[r];
+		}
+		else
+		{
+			// Transparent
+			cram_fmt[i] = 0x0000;
+		}
+	}
+	
+	// Flush GPU
+	DrawSync(0);
+	
+	// Transfer formatted CRAM to VRAM
+	RECT cram_rect = {0, 511, 16 * 4, 1};
+	LoadImage(&cram_rect, (u_long*)cram_fmt);
+	
 	// Update dirty VRAM
 	uint8_t *dirty_p = vdp_vram;
 	for (size_t i = 0; i < (VRAM_SIZE / (512 * 4)); i++)
@@ -186,14 +242,8 @@ void VDP_Render()
 				dirty_p++;
 			}
 			
-			// Upload to VRAM
-			RECT dec_rect = {512 + i * 16, 0, 4, 512};
-			LoadImage(&dec_rect, (u_long*)dec);
-			dec_rect.x += 4;
-			LoadImage(&dec_rect, (u_long*)dec);
-			dec_rect.x += 4;
-			LoadImage(&dec_rect, (u_long*)dec);
-			dec_rect.x += 4;
+			// Transfer to VRAM
+			RECT dec_rect = {384 + i * 4, 0, 4, 512};
 			LoadImage(&dec_rect, (u_long*)dec);
 			
 			// Clear dirty flag
@@ -205,16 +255,17 @@ void VDP_Render()
 		}
 	}
 	
-	// Flip buffer index
-	gpu_statep = (gpu_statep == &gpu_state[0]) ? &gpu_state[1] : &gpu_state[0];
-	
-	// Sync
-	DrawSync(0);
+	// Display screen
 	VSync(0);
 	
-	// Switch pages	
 	PutDispEnv(&gpu_statep->disp);
 	PutDrawEnv(&gpu_statep->draw);
+	
+	// Draw state
+	DrawOTag(&gpu_statep->ot[GFX_OTLEN]);
+	
+	// Enable display output
+	SetDispMask(1);
 	
 	// Send vertical interrupt
 	vdp_vint();

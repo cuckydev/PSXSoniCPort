@@ -2,7 +2,7 @@
 
 // Screen dimensions
 #define SCREEN_WIDTH  384
-#define SCREEN_HEIGHT 240
+#define SCREEN_HEIGHT 224
 
 #define SCREEN_WIDEADD  (SCREEN_WIDTH - 320)
 #define SCREEN_WIDEADD2 (SCREEN_WIDEADD / 2)
