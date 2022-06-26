@@ -14,9 +14,8 @@
 // VDP internal state
 static ALIGNED4 uint8_t vdp_vram[VRAM_SIZE];
 static uint8_t *vdp_vram_p;
-static size_t vdp_vram_i;
 
-static uint8_t vdp_dirty[VRAM_SIZE / (512 * 4)];
+static uint8_t vdp_vram_dirty[VRAM_SIZE / (512 * 4)];
 
 static uint16_t vdp_cram[16 * 4];
 static uint16_t *vdp_cram_p;
@@ -42,10 +41,10 @@ static struct GpuState
 	
 	// Buffers
 	u_long ot[1 + GFX_OTLEN]; // Ordering table
-	uint8_t pri[0x8000]; // Primitive buffer
+	uint8_t pri[0x10000]; // Primitive buffer
 	uint8_t *prip;
 } gpu_state[2];
-struct GpuState *gpu_statep;
+static struct GpuState *gpu_statep;
 
 // VDP interface
 int VDP_Init(const MD_Header *header)
@@ -58,16 +57,16 @@ int VDP_Init(const MD_Header *header)
 	SetDefDispEnv(&gpu_state[1].disp, 0, 256, SCREEN_WIDTH, 240);
 	
 	gpu_state[0].disp.screen.y = 8;
-	gpu_state[0].disp.screen.w = 320;
+	gpu_state[0].disp.screen.w = SCREEN_WIDTH;
 	gpu_state[0].disp.screen.h = 224;
 	
 	gpu_state[1].disp.screen.y = 8;
-	gpu_state[1].disp.screen.w = 320;
+	gpu_state[1].disp.screen.w = SCREEN_WIDTH;
 	gpu_state[1].disp.screen.h = 224;
 	
 	// Define drawing environments, first on bottom and second on top
-	SetDefDrawEnv(&gpu_state[0].draw, 0, 256, SCREEN_WIDTH, 240);
-	SetDefDrawEnv(&gpu_state[1].draw, 0, 0, SCREEN_WIDTH, 240);
+	SetDefDrawEnv(&gpu_state[0].draw, 0, 256, SCREEN_WIDTH, 224);
+	SetDefDrawEnv(&gpu_state[1].draw, 0, 0, SCREEN_WIDTH, 224);
 	
 	// Select GPU state
 	gpu_statep = &gpu_state[0];
@@ -87,32 +86,39 @@ int VDP_Init(const MD_Header *header)
 	vdp_hint = header->h_interrupt;
 	vdp_vint = header->v_interrupt;
 	
+	// Enable display output
+	SetDispMask(1);
+	
 	return 0;
 }
 
 void VDP_SeekVRAM(size_t offset)
 {
 	vdp_vram_p = vdp_vram + offset;
-	vdp_vram_i = offset;
 }
 
-static void VDP_WriteByte(uint8_t data)
+static void VDP_DirtyVRAM(size_t a, size_t b)
 {
-	*vdp_vram_p++ = data;
-	vdp_dirty[vdp_vram_i / (512 * 4)] = 1;
-	vdp_vram_i++;
+	a /= (512 * 4);
+	b /= (512 * 4);
+	for (size_t i = a; i <= b; i++)
+		vdp_vram_dirty[i] = 1;
 }
 
 void VDP_WriteVRAM(const uint8_t *data, size_t len)
 {
-	while (len-- > 0)
-		VDP_WriteByte(*data++);
+	uint8_t *vdp_vram_start = vdp_vram_p;
+	memcpy(vdp_vram_start, data, len);
+	vdp_vram_p += len;
+	VDP_DirtyVRAM(vdp_vram_start - vdp_vram, vdp_vram_p - vdp_vram);
 }
 
 void VDP_FillVRAM(uint8_t data, size_t len)
 {
-	while (len-- > 0)
-		VDP_WriteByte(data);
+	uint8_t *vdp_vram_start = vdp_vram_p;
+	memset(vdp_vram_start, data, len);
+	vdp_vram_p += len;
+	VDP_DirtyVRAM(vdp_vram_start - vdp_vram, vdp_vram_p - vdp_vram);
 }
 
 void VDP_SeekCRAM(size_t offset)
@@ -179,6 +185,15 @@ void VDP_SetHIntPosition(int16_t pos)
 }
 
 // VDP rendering
+void *VDP_AllocPrim(size_t size)
+{
+	// Allocate and link primitive of given size
+	void *pri = gpu_statep->prip;
+	gpu_statep->prip += size;
+	addPrim(&gpu_statep->ot[1], pri);
+	return pri;
+}
+
 void VDP_Render()
 {
 	// Flip GPU state
@@ -219,6 +234,67 @@ void VDP_Render()
 		}
 	}
 	
+	// Draw sprites
+	for (uint8_t i = 0;;)
+	{
+		// Get sprite values
+		const uint16_t *sprite = (const uint16_t*)(vdp_vram + vdp_sprite_location + ((size_t)i << 3));
+		uint16_t sprite_y = sprite[0];
+		uint16_t sprite_sl = sprite[1];
+		uint8_t sprite_width = (sprite_sl & SPRITE_SL_W_AND) >> SPRITE_SL_W_SHIFT;
+		uint8_t sprite_height = (sprite_sl & SPRITE_SL_H_AND) >> SPRITE_SL_H_SHIFT;
+		uint8_t sprite_link = (sprite_sl & SPRITE_SL_L_AND) >> SPRITE_SL_L_SHIFT;
+		uint16_t sprite_tile = sprite[2];
+		uint16_t sprite_x = sprite[3];
+		
+		// Write sprites
+		for (uint8_t x = 0; x <= sprite_width; x++)
+		{
+			/*
+			SPRT *sprt = VDP_AllocPrim(sizeof(SPRT));
+			setSprt(sprt);
+			setXY0(sprt, (int)sprite_x - 0x80 + (x << 3), (int)sprite_y - 0x80);
+			setWH(sprt, 8, sprite_height << 3);
+			setUV0(sprt, 0, 0);
+			setRGB0(sprt, 0x80, 0x80, 0x80);
+			sprt->clut = 16 * 511;
+			
+			DR_TPAGE *tpage = VDP_AllocPrim(sizeof(DR_TPAGE));
+			setDrawTPage(tpage, 0, 0, getTPage(1, 0, SCREEN_WIDTH, 0));
+			*/
+			TILE *tile = VDP_AllocPrim(sizeof(TILE));
+			setTile(tile);
+			tile->x0 = (int)sprite_x - 0x80 + (x << 3);
+			tile->y0 = (int)sprite_y - 0x80;
+			tile->w = 8;
+			tile->h = 8 + (sprite_height << 3);
+			setRGB0(tile, 255, 255, 255);
+		}
+		
+		// Go to next sprite
+		if (sprite_link != 0)
+			i = sprite_link;
+		else
+			break;
+	}
+	
+	// Fill background
+	TILE *bg_fill = VDP_AllocPrim(sizeof(TILE));
+	setTile(bg_fill);
+	bg_fill->x0 = 0;
+	bg_fill->y0 = 0;
+	bg_fill->w = 240;
+	bg_fill->h = SCREEN_HEIGHT;
+	setRGB0(bg_fill, 0, 0, 0);
+	
+	bg_fill = VDP_AllocPrim(sizeof(TILE));
+	setTile(bg_fill);
+	bg_fill->x0 = 240;
+	bg_fill->y0 = 0;
+	bg_fill->w = SCREEN_WIDTH - 240;
+	bg_fill->h = SCREEN_HEIGHT;
+	setRGB0(bg_fill, 0, 0, 0);
+	
 	// Flush GPU
 	DrawSync(0);
 	
@@ -230,7 +306,7 @@ void VDP_Render()
 	uint8_t *dirty_p = vdp_vram;
 	for (size_t i = 0; i < (VRAM_SIZE / (512 * 4)); i++)
 	{
-		if (vdp_dirty[i])
+		if (vdp_vram_dirty[i])
 		{
 			// Deconstruct VRAM here
 			ALIGNED4 uint8_t dec[512 * 8];
@@ -243,11 +319,11 @@ void VDP_Render()
 			}
 			
 			// Transfer to VRAM
-			RECT dec_rect = {384 + i * 4, 0, 4, 512};
+			RECT dec_rect = {SCREEN_WIDTH + i * 4, 0, 4, 512};
 			LoadImage(&dec_rect, (u_long*)dec);
 			
 			// Clear dirty flag
-			vdp_dirty[i] = 0;
+			vdp_vram_dirty[i] = 0;
 		}
 		else
 		{
@@ -263,9 +339,6 @@ void VDP_Render()
 	
 	// Draw state
 	DrawOTag(&gpu_statep->ot[GFX_OTLEN]);
-	
-	// Enable display output
-	SetDispMask(1);
 	
 	// Send vertical interrupt
 	vdp_vint();
