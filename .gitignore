@@ -1,0 +1,13 @@
+# Exclude build directories
+/build/
+
+# Exclude converted resources
+/src/Resource/
+/.vs
+/out
+CMakeSettings.json
+
+# Exclude submodule libraries
+libs/build*/
+libs/download
+libs/install
