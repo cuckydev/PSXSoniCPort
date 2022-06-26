@@ -293,8 +293,8 @@ void SS_ShowLayout(uint8_t sprite_i)
 	int16_t sin, cos;
 	CalcSine(ss_angle.f.u & 0xFC, &sin, &cos); // Remove this AND for smooth rotation
 	
-	int16_t d2 = -((uint16_t)scrpos_x.f.u % 24) - 180;
-	int16_t d3 = -((uint16_t)scrpos_y.f.u % 24) - 180;
+	int16_t d2 = -((uint16_t)scrpos_x.f.u % 24) - 180 - SCREEN_WIDEADD2;
+	int16_t d3 = -((uint16_t)scrpos_y.f.u % 24) - 180 - SCREEN_TALLADD2;
 	int16_t d4 = sin * 24;
 	int16_t d5 = cos * 24;
 	

@@ -11,19 +11,14 @@
 #include <psxgte.h>
 #include <psxgpu.h>
 
-// VDP compile options
-#define VDP_SANITY // Enable sanity checks for the VDP (slower, but technically safer, basically for testing)
-// #define VDP_PALETTE_DISPLAY // Enable palette display
-
-// VDP masks
-#define VDP_MASK_PLANEPRI (1 << 0)
-#define VDP_MASK_SPRITE   (1 << 1)
-
 // VDP internal state
 static ALIGNED4 uint8_t vdp_vram[VRAM_SIZE];
-static uint16_t vdp_cram[4][16];
-
 static uint8_t *vdp_vram_p;
+static size_t vdp_vram_i;
+
+static uint8_t vdp_dirty[VRAM_SIZE / (512 * 4)];
+
+static uint16_t vdp_cram[4][16];
 static uint16_t *vdp_cram_p;
 
 static size_t vdp_plane_a_location, vdp_plane_b_location, vdp_sprite_location, vdp_hscroll_location;
@@ -36,14 +31,36 @@ static int16_t vdp_hint_pos;
 
 static MD_Vector vdp_hint, vdp_vint;
 
+// GPU state
+static struct GpuState
+{
+	DISPENV disp;
+	DRAWENV draw;
+} gpu_state[2];
+struct GpuState *gpu_statep;
+
 // VDP interface
 int VDP_Init(const MD_Header *header)
 {
 	// Initialize GPU
 	ResetGraph(0);
-
+	
+	// Define display environments, first on top and second on bottom
+	SetDefDispEnv(&gpu_state[0].disp, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SetDefDispEnv(&gpu_state[1].disp, 0, 256, SCREEN_WIDTH, SCREEN_HEIGHT);
+	
+	// Define drawing environments, first on bottom and second on top
+	SetDefDrawEnv(&gpu_state[0].draw, 0, 256, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SetDefDrawEnv(&gpu_state[1].draw, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	
+	// Select GPU state
+	gpu_statep = &gpu_state[0];
+	PutDispEnv(&gpu_statep->disp);
+	PutDrawEnv(&gpu_statep->draw);
+	
+	// Enable display output
 	SetDispMask(1);
-
+	
 	// Initialize VDP state
 	vdp_plane_a_location = 0;
 	vdp_plane_b_location = 0;
@@ -64,76 +81,42 @@ int VDP_Init(const MD_Header *header)
 
 void VDP_SeekVRAM(size_t offset)
 {
-	#ifdef VDP_SANITY
-	if (offset >= VRAM_SIZE)
-	{
-		puts("VDP_SeekVRAM: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_vram_p = vdp_vram + offset;
+	vdp_vram_i = offset;
+}
+
+static void VDP_WriteByte(uint8_t data)
+{
+	*vdp_vram_p++ = data;
+	vdp_dirty[vdp_vram_i / (512 * 4)] = 1;
+	vdp_vram_i++;
 }
 
 void VDP_WriteVRAM(const uint8_t *data, size_t len)
 {
-	#ifdef VDP_SANITY
-	if ((vdp_vram_p - vdp_vram) >= VRAM_SIZE || (vdp_vram_p - vdp_vram + len) > VRAM_SIZE)
-	{
-		puts("VDP_WriteVRAM: Out-of-bounds");
-		return;
-	}
-	#endif
-	memcpy(vdp_vram_p, data, len);
-	vdp_vram_p += len;
+	while (len-- > 0)
+		VDP_WriteByte(*data++);
 }
 
 void VDP_FillVRAM(uint8_t data, size_t len)
 {
-	#ifdef VDP_SANITY
-	if ((vdp_vram_p - vdp_vram) >= VRAM_SIZE || (vdp_vram_p - vdp_vram + len) > VRAM_SIZE)
-	{
-		puts("VDP_WriteVRAM: Out-of-bounds");
-		return;
-	}
-	#endif
-	memset(vdp_vram_p, data, len);
-	vdp_vram_p += len;
+	while (len-- > 0)
+		VDP_WriteByte(data);
 }
 
 void VDP_SeekCRAM(size_t offset)
 {
-	#ifdef VDP_SANITY
-	if (offset >= COLOURS)
-	{
-		puts("VDP_SeekCRAM: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_cram_p = &vdp_cram[0][0] + offset;
 }
 
 void VDP_WriteCRAM(const uint16_t *data, size_t len)
 {
-	#ifdef VDP_SANITY
-	if ((vdp_cram_p - &vdp_cram[0][0]) >= COLOURS || (vdp_cram_p - &vdp_cram[0][0] + len) > COLOURS)
-	{
-		puts("VDP_WriteCRAM: Out-of-bounds");
-		return;
-	}
-	#endif
 	memcpy(vdp_cram_p, data, len << 1);
 	vdp_cram_p += len;
 }
 
 void VDP_FillCRAM(uint16_t data, size_t len)
 {
-	#ifdef VDP_SANITY
-	if ((vdp_cram_p - &vdp_cram[0][0]) >= COLOURS || (vdp_cram_p - &vdp_cram[0][0] + len) > COLOURS)
-	{
-		puts("VDP_WriteCRAM: Out-of-bounds");
-		return;
-	}
-	#endif
 	while (len-- > 0)
 		*vdp_cram_p++ = data;
 }
@@ -141,77 +124,35 @@ void VDP_FillCRAM(uint16_t data, size_t len)
 void VDP_SetPlaneALocation(size_t loc)
 {
 	loc &= ~0x3FF;
-	#ifdef VDP_SANITY
-	if (loc > VRAM_SIZE - PLANE_SIZE)
-	{
-		puts("VDP_SetPlaneALocation: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_plane_a_location = loc;
 }
 
 void VDP_SetPlaneBLocation(size_t loc)
 {
 	loc &= ~0x1FFF;
-	#ifdef VDP_SANITY
-	if (loc > VRAM_SIZE - PLANE_SIZE)
-	{
-		puts("VDP_SetPlaneBLocation: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_plane_b_location = loc;
 }
 
 void VDP_SetSpriteLocation(size_t loc)
 {
 	loc &= ~0x1FF;
-	#ifdef VDP_SANITY
-	if (loc > VRAM_SIZE - SPRITES_SIZE)
-	{
-		puts("VDP_SetSpriteLocation: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_sprite_location = loc;
 }
 
 void VDP_SetHScrollLocation(size_t loc)
 {
 	loc &= ~0x3FF;
-	#ifdef VDP_SANITY
-	if (loc > VRAM_SIZE - SCREEN_HEIGHT * 4)
-	{
-		puts("VDP_SetHScrollLocation: Out-of-bounds");
-		return;
-	}
-	#endif
 	vdp_hscroll_location = loc;
 }
 
 void VDP_SetPlaneSize(size_t w, size_t h)
 {
-	#ifdef VDP_SANITY
-	if (((w * h) << 1) > PLANE_SIZE)
-	{
-		printf("VDP_SetPlaneSize: Requested plane size exceeds 0x%04X bytes\n", PLANE_SIZE);
-		return;
-	}
-	#endif
 	vdp_plane_w = w;
 	vdp_plane_h = h;
 }
 
 void VDP_SetBackgroundColour(uint8_t index)
 {
-	#ifdef VDP_SANITY
-	if (index >= COLOURS)
-	{
-		puts("VDP_SetBackgroundColour: Illegal colour index");
-		return;
-	}
-	#endif
 	vdp_background_colour = index;
 }
 
@@ -229,20 +170,52 @@ void VDP_SetHIntPosition(int16_t pos)
 // VDP rendering
 void VDP_Render()
 {
-	// Send vertical interrupt
-	vdp_vint();
-	
-	// DMA vram to PSX vram
-	u_long *vrama = (u_long*)vdp_vram;
-	for (int i = 0; i < 256; i += 2)
+	// Update dirty VRAM
+	uint8_t *dirty_p = vdp_vram;
+	for (size_t i = 0; i < (VRAM_SIZE / (512 * 4)); i++)
 	{
-		RECT duplo = { i, 0, 2, 256 };
-		DrawSync(0);
-		LoadImage(&duplo, vrama);
-		vrama += 256;
+		if (vdp_dirty[i])
+		{
+			// Deconstruct VRAM here
+			ALIGNED4 uint8_t dec[512 * 8];
+			uint8_t *decp = dec;
+			for (size_t j = 0; j < (512 * 4); j++)
+			{
+				*decp++ = (*dirty_p & 0xF0) >> 4;
+				*decp++ = (*dirty_p & 0x0F) >> 0;
+				dirty_p++;
+			}
+			
+			// Upload to VRAM
+			RECT dec_rect = {512 + i * 16, 0, 4, 512};
+			LoadImage(&dec_rect, (u_long*)dec);
+			dec_rect.x += 4;
+			LoadImage(&dec_rect, (u_long*)dec);
+			dec_rect.x += 4;
+			LoadImage(&dec_rect, (u_long*)dec);
+			dec_rect.x += 4;
+			LoadImage(&dec_rect, (u_long*)dec);
+			
+			// Clear dirty flag
+			vdp_dirty[i] = 0;
+		}
+		else
+		{
+			dirty_p += (512 * 4);
+		}
 	}
-
-	// Delay
+	
+	// Flip buffer index
+	gpu_statep = (gpu_statep == &gpu_state[0]) ? &gpu_state[1] : &gpu_state[0];
+	
+	// Sync
 	DrawSync(0);
 	VSync(0);
+	
+	// Switch pages	
+	PutDispEnv(&gpu_statep->disp);
+	PutDrawEnv(&gpu_statep->draw);
+	
+	// Send vertical interrupt
+	vdp_vint();
 }
