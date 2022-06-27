@@ -12,7 +12,7 @@ set(SAVE_NAME ${CMAKE_MATCH_1}-${CMAKE_MATCH_2}${CMAKE_MATCH_3})
 option(REV01 "Compile REV01 ROM" ON)
 option(JAPANESE "Compile Japanese ROM" OFF)
 option(FIX_BUGS "Fix bugs (completely screwed up code, not gameplay bugs)" OFF)
-option(SPLASH "Enable the SSRG splash screen (for my own demo releases)" OFF)
+option(SPLASH "Enable the SSRG splash screen (for my own demo releases)" ON)
 
 #########
 # Setup #
@@ -101,6 +101,8 @@ psn00bsdk_add_executable(SoniCPort STATIC
 	# Backend
 	"src/Backend/MegaDrive.c"
 	"src/Backend/MegaDrive.h"
+	"src/Backend/Timer.c"
+	"src/Backend/Timer.h"
 	"src/Backend/VDP.c"
 	"src/Backend/VDP.h"
 	"src/Backend/Joypad.c"
