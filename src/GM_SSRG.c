@@ -51,13 +51,12 @@ static const uint16_t pal_ssrg[] = {
 };
 
 // SSRG planes
-static void CopyTilemap_Single(uint16_t v, size_t offset, size_t width, size_t height)
+static void CopyTilemap_Single(uint8_t v, size_t offset, size_t width, size_t height)
 {
 	while (height-- > 0)
 	{
 		VDP_SeekVRAM(offset);
-		for (size_t x = 0; x < width; x++)
-			VDP_WriteVRAM((const uint8_t*)&v, 2);
+		VDP_FillVRAM(v, width << 2);
 		offset += PLANE_WIDTH * 2;
 	}
 }
@@ -411,19 +410,23 @@ static void Obj_Square(Object *obj)
 	SpeedToPosHud(obj);
 	UpdateScrollPositions(obj);
 	
-	// Clear previous plane art
-	CopyTilemap_Single(0, VRAM_BG, 0x11, 0x11);
-	
-	// Copy new plane art
-	const struct MapRamData *data = &map_ram_data[(scratch->timer & 0x18) >> 3];
-	CopyTilemap(data->map, data->offset, data->width + 1, data->height + 1);
-	
-	#if (SCREEN_WIDTH > 320)
-		// Clear unwanted tiles
-		int16_t clip_tiles = -(obj->pos.s.x >> 3);
-		if (clip_tiles > 0)
-			CopyTilemap_Single(0, VRAM_BG, clip_tiles, 0x11);
-	#endif
+	if (scratch->timer != obj->frame)
+	{
+		// Clear previous plane art
+		CopyTilemap_Single(0, VRAM_BG, 0x11, 0x11);
+		
+		// Copy new plane art
+		const struct MapRamData *data = &map_ram_data[(scratch->timer & 0x18) >> 3];
+		CopyTilemap(data->map, data->offset, data->width + 1, data->height + 1);
+		
+		obj->frame = scratch->timer;
+		#if (SCREEN_WIDTH > 320)
+			// Clear unwanted tiles
+			int16_t clip_tiles = -(obj->pos.s.x >> 3);
+			if (clip_tiles > 0)
+				CopyTilemap_Single(0, VRAM_BG, clip_tiles, 0x11);
+		#endif
+	}
 }
 
 // Sonic neon object

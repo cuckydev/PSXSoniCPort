@@ -67,7 +67,16 @@ static MD_Vector vdp_hint, vdp_vint;
 static unsigned int vdp_last_time;
 
 // GPU state
-#define GFX_OTLEN 1
+#define GFX_OTLEN 8
+enum
+{
+	VDPOTLEN_SP_PRI,
+	VDPOTLEN_FG_PRI,
+	VDPOTLEN_BG_PRI,
+	VDPOTLEN_SP,
+	VDPOTLEN_FG,
+	VDPOTLEN_BG
+};
 
 static struct GpuState
 {
@@ -272,13 +281,73 @@ void VDP_SetHIntPosition(int16_t pos)
 }
 
 // VDP rendering
-void *VDP_AllocPrim(size_t size)
+static void *VDP_AllocPrim(size_t size, size_t index)
 {
 	// Allocate and link primitive of given size
 	void *pri = gpu_statep->prip;
 	gpu_statep->prip += size;
-	addPrim(&gpu_statep->ot[1], pri);
+	addPrim(&gpu_statep->ot[1 + index], pri);
 	return pri;
+}
+
+static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_t sy, uint16_t vy, uint16_t h, uint16_t x, uint16_t y)
+{
+	int16_t sx = -((uint16_t)(-hscroll) & 0x7F);
+	x += ((uint16_t)(-hscroll) & 0x180) >> 1;
+	while (1)
+	{
+		for (size_t i = 0; i < 2; i++)
+		{
+			// Draw segment
+			SPRT *sprt = VDP_AllocPrim(sizeof(SPRT), index[i]);
+			setSprt(sprt);
+			sprt->x0 = sx;
+			sprt->y0 = sy;
+			sprt->u0 = (x << 1) & 0xFF;
+			sprt->v0 = vy;
+			sprt->w = 128;
+			sprt->h = h;
+			sprt->clut = 64 * 511;
+			setRGB0(sprt, 128, 128, 128);
+			
+			// Set texture page
+			DR_TPAGE *tpage = VDP_AllocPrim(sizeof(DR_TPAGE), index[i]);
+			setDrawTPage(tpage, 1, 0, getTPage(1, 0, (x & ~0x7F) + (i << 8), y));
+		}
+		
+		// Increment
+		sx += 128;
+		if (sx >= SCREEN_WIDTH)
+			break;
+		x = ((x + 64) & 0xFF) | 0x200;
+	}
+}
+
+static void VDP_DrawPlane(const int16_t *hscroll, const size_t *index, int16_t vscroll, uint16_t x, uint16_t y)
+{
+	int16_t hscroll_v = *hscroll;
+	uint16_t sy_v = 0;
+	uint8_t vy_v = vscroll;
+	uint8_t vy = vy_v;
+	
+	for (uint16_t sy = 0; sy < SCREEN_HEIGHT; sy++)
+	{
+		// Check if hscroll has changed or we're crossing segs
+		if (*hscroll != hscroll_v || (sy != 0 && (vy & 0x7F) == 0))
+		{
+			VDP_DrawPlaneSeg(hscroll_v, index, sy_v, vy_v, sy - sy_v, x, y);
+			hscroll_v = *hscroll;
+			sy_v = sy;
+			vy_v = vy;
+		}
+		
+		// Increment
+		vy++;
+		hscroll += 2;
+	}
+	
+	// Finish last seg
+	VDP_DrawPlaneSeg(hscroll_v, index, sy_v, vy_v, SCREEN_HEIGHT - sy_v, x, y);
 }
 
 void VDP_Render()
@@ -311,6 +380,15 @@ void VDP_Render()
 		}
 	}
 	
+	// Draw plane A
+	const int16_t *hscroll = (int16_t*)(vdp_vram + vdp_hscroll_location);
+	
+	static const size_t index_fg[] = { VDPOTLEN_FG, VDPOTLEN_FG_PRI };
+	VDP_DrawPlane(&hscroll[0], index_fg, vdp_vscroll_a, 512, 0);
+	
+	static const size_t index_bg[] = { VDPOTLEN_BG, VDPOTLEN_BG_PRI };
+	VDP_DrawPlane(&hscroll[1], index_bg, vdp_vscroll_b, 512, 256);
+	
 	// Draw sprites
 	for (uint8_t i = 0;;)
 	{
@@ -327,7 +405,7 @@ void VDP_Render()
 		// Write sprites
 		for (uint8_t x = 0; x <= sprite_width; x++)
 		{
-			TILE *tile = VDP_AllocPrim(sizeof(TILE));
+			TILE *tile = VDP_AllocPrim(sizeof(TILE), VDPOTLEN_SP);
 			setTile(tile);
 			tile->x0 = (int)sprite_x - 0x80 + (x << 3);
 			tile->y0 = (int)sprite_y - 0x80;
@@ -353,7 +431,7 @@ void VDP_Render()
 		g = VDP_COLLEVEL_8[g];
 		b = VDP_COLLEVEL_8[b];
 		
-		TILE *bg_fill = VDP_AllocPrim(sizeof(TILE));
+		TILE *bg_fill = VDP_AllocPrim(sizeof(TILE), GFX_OTLEN - 1);
 		setTile(bg_fill);
 		bg_fill->x0 = 0;
 		bg_fill->y0 = 0;
@@ -361,7 +439,7 @@ void VDP_Render()
 		bg_fill->h = SCREEN_HEIGHT;
 		setRGB0(bg_fill, r, g, b);
 		
-		bg_fill = VDP_AllocPrim(sizeof(TILE));
+		bg_fill = VDP_AllocPrim(sizeof(TILE), GFX_OTLEN - 1);
 		setTile(bg_fill);
 		bg_fill->x0 = 240;
 		bg_fill->y0 = 0;
@@ -378,10 +456,10 @@ void VDP_Render()
 	LoadImage(&cram_rect, (u_long*)cram_fmt);
 	
 	// Update dirty VRAM
-	RECT dec_rect = {SCREEN_WIDTH, 0, 4, VDP_DIRTY_HEIGHT};
+	RECT dec_rect = {SCREEN_WIDTH, 0, 2, VDP_DIRTY_HEIGHT};
 	
 	uint8_t *vram_dirtyp = vdp_vram_dirty;
-	uint8_t *dirtyp = vdp_vram;
+	uint8_t *vram4p = vdp_vram;
 	uint8_t *vram8p = vdp_vram_8;
 	
 	for (size_t i = 0; i < (VRAM_SIZE / (VDP_DIRTY_HEIGHT * 4)); i++)
@@ -389,30 +467,31 @@ void VDP_Render()
 		if (*vram_dirtyp)
 		{
 			// Deconstruct VRAM here
+			uint8_t *vram4 = vram4p;
 			uint8_t *vram8 = vram8p;
 			for (size_t j = 0; j < (VDP_DIRTY_HEIGHT * 4); j++)
 			{
-				*vram8p++ = (*dirtyp & 0xF0) >> 4;
-				*vram8p++ = (*dirtyp & 0x0F) >> 0;
-				dirtyp++;
+				*vram8p++ = (*vram4p & 0xF0) >> 4;
+				*vram8p++ = (*vram4p & 0x0F) >> 0;
+				vram4p++;
 			}
 			
 			// Transfer to VRAM
-			LoadImage(&dec_rect, (u_long*)vram8);
+			LoadImage(&dec_rect, (u_long*)vram4);
 			
 			// Clear dirty flag
 			*vram_dirtyp = 0;
 		}
 		else
 		{
-			dirtyp += (VDP_DIRTY_HEIGHT * 4);
+			vram4p += (VDP_DIRTY_HEIGHT * 4);
 			vram8p += (VDP_DIRTY_HEIGHT * 8);
 		}
 		
 		// Move rect
 		if ((dec_rect.y += VDP_DIRTY_HEIGHT) & 0x200)
 		{
-			dec_rect.x += 4;
+			dec_rect.x += 2;
 			dec_rect.y = 0;
 		}
 		vram_dirtyp++;
@@ -420,7 +499,9 @@ void VDP_Render()
 	
 	// Update dirty planes
 	ALIGNED4 uint8_t plane[8 * 8];
-	RECT plane_rect = {768, 0, 4, 8};
+	static ALIGNED4 uint8_t plane2[8 * 8] = {};
+	RECT plane_rect = {512, 0, 4, 8};
+	RECT plane2_rect = {768, 0, 4, 8};
 	
 	uint8_t *plane_dirtyp = &vdp_vram_plane_dirty[0][0];
 	
@@ -437,6 +518,7 @@ void VDP_Render()
 				uint8_t palette = ((tile & TILE_PALETTE_AND) >> TILE_PALETTE_SHIFT) << 4;
 				uint8_t y_flip = (tile & TILE_Y_FLIP_AND) != 0;
 				uint8_t x_flip = (tile & TILE_X_FLIP_AND) != 0;
+				uint8_t priority = (tile & TILE_PRIORITY_AND) != 0;
 				uint16_t pattern = (tile & TILE_PATTERN_AND) >> TILE_PATTERN_SHIFT;
 				
 				// Deconstruct tile
@@ -476,17 +558,30 @@ void VDP_Render()
 				}
 				
 				// Transfer to VRAM
-				LoadImage(&plane_rect, (u_long*)plane);
+				if (priority)
+				{
+					LoadImage(&plane_rect, (u_long*)plane2);
+					LoadImage(&plane2_rect, (u_long*)plane);
+				}
+				else
+				{
+					LoadImage(&plane2_rect, (u_long*)plane2);
+					LoadImage(&plane_rect, (u_long*)plane);
+				}
 				
 				// Clear dirty flag
 				*plane_dirtyp = 0;
 			}
 			
 			// Move rect
-			if ((plane_rect.x += 4) & 0x400)
+			plane_rect.x += 4;
+			plane2_rect.x += 4;
+			if (plane2_rect.x & 0x400)
 			{
-				plane_rect.x = 768;
+				plane_rect.x = 512;
 				plane_rect.y += 8;
+				plane2_rect.x = 768;
+				plane2_rect.y += 8;
 			}
 			plane_dirtyp++;
 			vram_i += 2;
