@@ -300,7 +300,7 @@ static void *VDP_AllocPrim(size_t size, size_t index)
 	return pri;
 }
 
-static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_t sy, uint16_t vy, uint16_t h, uint16_t pu)
+static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, size_t indices, uint16_t sy, uint16_t vy, uint16_t h, uint16_t pu)
 {
 	/*
 	int16_t sx = -((uint16_t)(-hscroll) & 0x7F);
@@ -347,7 +347,7 @@ static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_
 			width = lx - (ux & 0xFE);
 		
 		uint16_t px = 512;
-		for (size_t i = 0; i < 2; i++, px = 768)
+		for (size_t i = 0; i < indices; i++, px = 768)
 		{
 			// Draw segment
 			SPRT *sprt = VDP_AllocPrim(sizeof(SPRT), index[i]);
@@ -375,7 +375,7 @@ static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_
 	}
 }
 
-static void VDP_DrawPlane(const int16_t *hscroll, const size_t *index, int16_t vscroll, uint16_t pu)
+static void VDP_DrawPlane(const int16_t *hscroll, const size_t *index, size_t indices, int16_t vscroll, uint16_t pu)
 {
 	int16_t hscroll_v = *hscroll;
 	uint16_t sy_v = 0;
@@ -387,7 +387,7 @@ static void VDP_DrawPlane(const int16_t *hscroll, const size_t *index, int16_t v
 		// Check if hscroll has changed or we're crossing segs
 		if (*hscroll != hscroll_v || (sy != 0 && vy == 0))
 		{
-			VDP_DrawPlaneSeg(hscroll_v, index, sy_v, vy_v, sy - sy_v, pu);
+			VDP_DrawPlaneSeg(hscroll_v, index, indices, sy_v, vy_v, sy - sy_v, pu);
 			hscroll_v = *hscroll;
 			sy_v = sy;
 			vy_v = vy;
@@ -399,7 +399,7 @@ static void VDP_DrawPlane(const int16_t *hscroll, const size_t *index, int16_t v
 	}
 	
 	// Finish last seg
-	VDP_DrawPlaneSeg(hscroll_v, index, sy_v, vy_v, SCREEN_HEIGHT - sy_v, pu);
+	VDP_DrawPlaneSeg(hscroll_v, index, indices, sy_v, vy_v, SCREEN_HEIGHT - sy_v, pu);
 }
 
 void VDP_Render()
@@ -436,10 +436,10 @@ void VDP_Render()
 	const int16_t *hscroll = (int16_t*)(vdp_vram + vdp_hscroll_location);
 	
 	static const size_t index_fg[] = { VDPOTLEN_FG, VDPOTLEN_FG_PRI };
-	VDP_DrawPlane(&hscroll[0], index_fg, vdp_vscroll_a, 0);
+	VDP_DrawPlane(&hscroll[0], index_fg, 2, vdp_vscroll_a, 0);
 	
 	static const size_t index_bg[] = { VDPOTLEN_BG, VDPOTLEN_BG_PRI };
-	VDP_DrawPlane(&hscroll[1], index_bg, vdp_vscroll_b, 256);
+	VDP_DrawPlane(&hscroll[1], index_bg, 1, vdp_vscroll_b, 256);
 	
 	// Draw sprites
 	for (uint8_t i = 0;;)
