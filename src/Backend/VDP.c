@@ -335,11 +335,16 @@ static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_
 	*/
 	uint16_t ux = -hscroll & 0x1FE;
 	int16_t sx = -(hscroll & 1);
+	uint16_t lx = SCREEN_WIDTH + (hscroll & 1);
 	
 	while (1)
 	{
 		// Get segment width
-		uint16_t width = 0x100 - (ux & 0xFE);
+		uint16_t width;
+		if (lx & 0xFF00)
+			width = 0x100 - (ux & 0xFE);
+		else
+			width = lx - (ux & 0xFE);
 		
 		uint16_t px = 512;
 		for (size_t i = 0; i < 2; i++, px = 768)
@@ -363,6 +368,7 @@ static void VDP_DrawPlaneSeg(const int16_t hscroll, const size_t *index, uint16_
 		
 		// Increment
 		sx += width;
+		lx -= width;
 		ux = (ux + width) & 0x1FE;
 		if (sx >= SCREEN_WIDTH)
 			break;

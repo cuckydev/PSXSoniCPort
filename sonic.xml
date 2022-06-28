@@ -15,6 +15,7 @@
 		<directory_tree>
 			<file name="SYSTEM.CNF" type="data" source="SYSTEM.CNF"/>
 			<file name="${TITLE_ID}" type="data" source="SoniCPort.exe"/>
+			<dummy sectors="1024"/>
 		</directory_tree>
 	</track>
 </iso_project>
