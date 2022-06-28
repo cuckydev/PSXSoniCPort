@@ -135,13 +135,13 @@ void Deform_GHZ()
 	{ *bufp++ = fg_x; *bufp++ = bg_x; }
 	
 	// Scroll water
-	int32_t wx = bg2_scrpos_x.v;
-	int32_t wi = (((scrpos_x.f.u - bg2_scrpos_x.f.u) << 8) / 0x68) << 8;
+	//int32_t wx = bg2_scrpos_x.v;
+	//int32_t wi = (((scrpos_x.f.u - bg2_scrpos_x.f.u) << 8) / 0x68) << 8;
 	
 	for (int i = 0; i < 0x48 + SCREEN_TALLADD + vid_bg_scrpos_y_dup; i++)
 	{
-		*bufp++ = fg_x; *bufp++ = -(wx >> 16);
-		wx += wi;
+		*bufp++ = fg_x; *bufp++ = bg_x;//-(wx >> 16);
+		//wx += wi;
 	}
 }
 

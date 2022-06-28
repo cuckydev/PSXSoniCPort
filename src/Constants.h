@@ -1,7 +1,7 @@
 #pragma once
 
 // Screen dimensions
-#define SCREEN_WIDTH  384
+#define SCREEN_WIDTH  320
 #define SCREEN_HEIGHT 224
 
 #define SCREEN_WIDEADD  (SCREEN_WIDTH - 320)
