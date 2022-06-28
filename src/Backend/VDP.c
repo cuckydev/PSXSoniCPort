@@ -610,15 +610,25 @@ void VDP_Render()
 				}
 				
 				// Transfer to VRAM
-				if (priority)
+				if (i == 0)
 				{
-					LoadImage(&plane_rect, (u_long*)plane2);
-					LoadImage(&plane2_rect, (u_long*)plane);
+					if (priority)
+					{
+						LoadImage(&plane_rect, (u_long*)plane2);
+						LoadImage(&plane2_rect, (u_long*)plane);
+					}
+					else
+					{
+						LoadImage(&plane2_rect, (u_long*)plane2);
+						LoadImage(&plane_rect, (u_long*)plane);
+					}
 				}
 				else
 				{
-					LoadImage(&plane2_rect, (u_long*)plane2);
-					LoadImage(&plane_rect, (u_long*)plane);
+					if (priority)
+						LoadImage(&plane2_rect, (u_long*)plane);
+					else
+						LoadImage(&plane_rect, (u_long*)plane);
 				}
 				
 				// Clear dirty flag
